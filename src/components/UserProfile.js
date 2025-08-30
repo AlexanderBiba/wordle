@@ -1,16 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { ACHIEVEMENTS, getAchievementProgress } from '../achievements';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import './UserProfile.scss';
 
 const UserProfile = ({ isOpen, onClose }) => {
-  const { user, userStats, signOutUser, refreshUserStats } = useAuth();
+  const { user, signOutUser } = useAuth();
   const [activeTab, setActiveTab] = useState('stats');
+  const [userStats, setUserStats] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchUserStats = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        setUserStats(userSnap.data().stats);
+      } else {
+        // Set default stats if user document doesn't exist
+        setUserStats({
+          gamesPlayed: 0,
+          gamesWon: 0,
+          currentStreak: 0,
+          maxStreak: 0,
+          totalGuesses: 0,
+          averageGuesses: 0,
+          bestTime: null,
+          achievements: [],
+          guessDistribution: Array(6).fill(0)
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+      // Set default stats on error
+      setUserStats({
+        gamesPlayed: 0,
+        gamesWon: 0,
+        currentStreak: 0,
+        maxStreak: 0,
+        totalGuesses: 0,
+        averageGuesses: 0,
+        bestTime: null,
+        achievements: [],
+        guessDistribution: Array(6).fill(0)
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Fetch fresh stats whenever profile opens
+  useEffect(() => {
+    if (isOpen && user) {
+      fetchUserStats();
+    }
+  }, [isOpen, user, fetchUserStats]);
   
   if (!isOpen || !user) return null;
 
+  // Show loading state while fetching stats
+  if (loading) {
+    return (
+      <div className="user-profile-overlay" onClick={onClose}>
+        <div className="user-profile" onClick={e => e.stopPropagation()}>
+          <div className="profile-header">
+            <h2>User Profile</h2>
+            <button className="close-btn" onClick={onClose}>×</button>
+          </div>
+          <div className="profile-content">
+            <div className="loading-state">
+              <div className="loading-spinner"></div>
+              <p>Loading your stats...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Handle case where userStats might be null (e.g., user deleted from Firestore)
-  // This should never happen now due to useAuth fixes, but adding extra safety
   if (!userStats) {
     return (
       <div className="user-profile-overlay" onClick={onClose}>
@@ -83,17 +156,7 @@ const UserProfile = ({ isOpen, onClose }) => {
               </p>
             </div>
           </div>
-          <div className="header-actions">
-            <button 
-              className="refresh-btn" 
-              onClick={refreshUserStats}
-              title="Refresh stats"
-              aria-label="Refresh user statistics"
-            >
-              🔄
-            </button>
-            <button className="close-btn" onClick={onClose}>×</button>
-          </div>
+          <button className="close-btn" onClick={onClose}>×</button>
         </div>
 
         <div className="profile-tabs">

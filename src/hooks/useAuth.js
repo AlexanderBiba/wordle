@@ -140,15 +140,11 @@ export const useAuth = () => {
         stats: newStats
       });
       
+      // Update local state immediately for real-time UI updates
       setUserStats(newStats);
     } catch (error) {
       console.error('Error updating user stats:', error);
     }
-  };
-
-  const refreshUserStats = async () => {
-    if (!user) return;
-    await getUserStats(user.uid);
   };
 
   return {
@@ -157,7 +153,6 @@ export const useAuth = () => {
     loading,
     signInWithGoogle,
     signOutUser,
-    updateUserStats,
-    refreshUserStats
+    updateUserStats
   };
 }; 
