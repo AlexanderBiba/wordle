@@ -86,6 +86,44 @@ body {
   z-index: 1;
 }
 
+// Leaderboard button
+.leaderboard-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  transition: all animation.$transition-normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  }
+  
+  .leaderboard-icon {
+    font-size: 1.25rem;
+    color: palette.$white;
+  }
+}
+
 // Profile button
 .profile-btn {
   background: rgba(255, 255, 255, 0.1);

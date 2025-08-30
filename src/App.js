@@ -6,6 +6,7 @@ import { useAuth } from "./hooks/useAuth";
 import { useGameState } from "./hooks/useGameState";
 import { checkAchievements } from "./achievements";
 import UserProfile from "./components/UserProfile";
+import Leaderboard from "./components/Leaderboard";
 
 const WORD_LENGTH = 5;
 const NUM_ATTEMPTS = 6;
@@ -14,6 +15,7 @@ const NUM_ATTEMPTS = 6;
 
 export default function App() {
   const [showProfile, setShowProfile] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   
   const { user, userStats, signInWithGoogle, updateUserStats } = useAuth();
   
@@ -124,7 +126,7 @@ export default function App() {
       case "Enter":
         if (currLetter < WORD_LENGTH) return;
         const guessRequest = new URL(
-          "checkWord",
+          "router",
           "https://words-935269737264.europe-west1.run.app"
         );
         guessRequest.searchParams.append(
@@ -230,11 +232,20 @@ export default function App() {
           <span role="img" aria-label="puzzle">🧩</span> Wordle
         </h1>
         <div className="header-actions">
+          <button 
+            className="leaderboard-btn"
+            onClick={() => setShowLeaderboard(true)}
+            aria-label="Open leaderboard"
+            title="View Leaderboard"
+          >
+            <span className="leaderboard-icon">🏆</span>
+          </button>
           {user && (
             <button 
               className="profile-btn"
               onClick={() => setShowProfile(true)}
               aria-label="Open user profile"
+              title="User Profile"
             >
               <img 
                 src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=2563eb&color=fff&size=120`}
@@ -250,6 +261,7 @@ export default function App() {
             className={`theme-toggle ${darkMode ? 'dark' : 'light'}`}
             onClick={toggleDarkMode}
             aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+            title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
           >
             <span className="toggle-icon">
               {darkMode ? '☀️' : '🌙'}
@@ -451,6 +463,12 @@ export default function App() {
       <UserProfile 
         isOpen={showProfile} 
         onClose={() => setShowProfile(false)} 
+      />
+
+      {/* Leaderboard Modal */}
+      <Leaderboard 
+        isOpen={showLeaderboard} 
+        onClose={() => setShowLeaderboard(false)} 
       />
     </div>
   );

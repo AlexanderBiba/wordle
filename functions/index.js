@@ -62,10 +62,82 @@ const guessResult = {
 };
 
 // --- Cloud Function Entry Point ---
-// The name 'checkWord' here must match the entry point configured in Cloud Run.
-functions.http('checkWord', (req, res) => {
+// The name 'router' here must match the entry point configured in Cloud Run.
+// This function handles multiple API endpoints:
+// - GET /router?word=HELLO -> Word validation
+// - GET /router?action=getLeaderboard&metric=winRate -> Leaderboard data
+functions.http('router', (req, res) => {
   // Use the cors handler to manage CORS headers
   corsHandler(req, res, async () => {
+    // Route: Leaderboard API
+    if (req.method === 'GET' && req.query.action === 'getLeaderboard') {
+      try {
+        const { metric = 'winRate' } = req.query;
+        
+        // Get all users with their stats
+        const usersSnapshot = await db.collection('users').get();
+        const users = [];
+        
+        usersSnapshot.forEach(doc => {
+          const userData = doc.data();
+          if (userData.stats && userData.stats.gamesPlayed > 0) {
+            // Calculate win rate
+            const winRate = Math.round((userData.stats.gamesWon / userData.stats.gamesPlayed) * 100);
+            
+            users.push({
+              uid: doc.id,
+              displayName: userData.displayName || 'Anonymous',
+              photoURL: userData.photoURL || null,
+              stats: {
+                ...userData.stats,
+                winRate: winRate
+              }
+            });
+          }
+        });
+        
+        // Sort users based on the requested metric
+        let sortedUsers = [];
+        switch (metric) {
+          case 'winRate':
+            sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
+            break;
+          case 'maxStreak':
+            sortedUsers = users.sort((a, b) => b.stats.maxStreak - a.stats.maxStreak);
+            break;
+          case 'currentStreak':
+            sortedUsers = users.sort((a, b) => b.stats.currentStreak - a.stats.currentStreak);
+            break;
+          case 'gamesPlayed':
+            sortedUsers = users.sort((a, b) => b.stats.gamesPlayed - a.stats.gamesPlayed);
+            break;
+          case 'averageGuesses':
+            sortedUsers = users.sort((a, b) => a.stats.averageGuesses - b.stats.averageGuesses);
+            break;
+          default:
+            sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
+        }
+        
+        // Return top 50 users
+        const leaderboard = sortedUsers.slice(0, 50);
+        
+        res.status(200).send({
+          leaderboard: leaderboard,
+          metric: metric,
+          totalUsers: users.length
+        });
+        
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        res.status(500).send({
+          error: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch leaderboard data.',
+        });
+      }
+      return;
+    }
+
+    // Route: Word Validation API
     // 1. Validate the incoming request
     const requestWord = req.query.word;
     if (!requestWord || typeof requestWord !== 'string' || requestWord.length !== 5) {
@@ -123,6 +195,75 @@ functions.http('checkWord', (req, res) => {
       res.status(500).send({
         error: 'INTERNAL_SERVER_ERROR',
         message: 'An unexpected error occurred.',
+      });
+    }
+  });
+});
+
+// Leaderboard function
+functions.http('getLeaderboard', (req, res) => {
+  corsHandler(req, res, async () => {
+    try {
+      const { metric = 'winRate' } = req.body;
+      
+      // Get all users with their stats
+      const usersSnapshot = await db.collection('users').get();
+      const users = [];
+      
+      usersSnapshot.forEach(doc => {
+        const userData = doc.data();
+        if (userData.stats && userData.stats.gamesPlayed > 0) {
+          // Calculate win rate
+          const winRate = Math.round((userData.stats.gamesWon / userData.stats.gamesPlayed) * 100);
+          
+          users.push({
+            uid: doc.id,
+            displayName: userData.displayName || 'Anonymous',
+            photoURL: userData.photoURL || null,
+            stats: {
+              ...userData.stats,
+              winRate: winRate
+            }
+          });
+        }
+      });
+      
+      // Sort users based on the requested metric
+      let sortedUsers = [];
+      switch (metric) {
+        case 'winRate':
+          sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
+          break;
+        case 'maxStreak':
+          sortedUsers = users.sort((a, b) => b.stats.maxStreak - a.stats.maxStreak);
+          break;
+        case 'currentStreak':
+          sortedUsers = users.sort((a, b) => b.stats.currentStreak - a.stats.currentStreak);
+          break;
+        case 'gamesPlayed':
+          sortedUsers = users.sort((a, b) => b.stats.gamesPlayed - a.stats.gamesPlayed);
+          break;
+        case 'averageGuesses':
+          sortedUsers = users.sort((a, b) => a.stats.averageGuesses - b.stats.averageGuesses);
+          break;
+        default:
+          sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
+      }
+      
+      // Return top 50 users
+      const leaderboard = sortedUsers.slice(0, 50);
+      
+      res.status(200).send({
+        leaderboard: leaderboard,
+        metric: metric,
+        totalUsers: users.length
+      });
+      
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      res.status(500).send({
+        error: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to fetch leaderboard data.',
       });
     }
   });
