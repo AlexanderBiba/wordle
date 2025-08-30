@@ -7,6 +7,12 @@ A beautiful, modern Wordle game built with React and Firebase. Features a clean,
 - **Modern UI/UX**: Clean, beautiful design with smooth animations and transitions
 - **🌙 Dark Mode Toggle**: Beautiful theme switcher with persistent preference
 - **Responsive Design**: Optimized for all devices (desktop, tablet, mobile)
+- **🏆 Leaderboard System**: Compete with other players across multiple metrics
+  - Win rate rankings
+  - Best streak competitions
+  - Current streak tracking
+  - Games played leaderboards
+  - Average guesses rankings
 - **Statistics Tracking**: 
   - Games played and win percentage
   - Current and maximum streaks
@@ -71,7 +77,7 @@ The design system is built with SCSS variables for easy customization:
 - **Animation Settings**: `src/_animation.scss` - Transition timings and keyframes
 - **Component Styles**: `src/App.scss` - Main component styling with theme support
 
-## 📊 Statistics
+## 📊 Statistics & Leaderboards
 
 Track your Wordle performance with:
 - Total games played
@@ -79,6 +85,13 @@ Track your Wordle performance with:
 - Current streak
 - Maximum streak
 - Guess distribution chart
+
+**🏆 Leaderboard Features:**
+- **Multi-metric Rankings**: View top players by win rate, streaks, games played, and more
+- **Real-time Updates**: Leaderboard data updates as players complete games
+- **Public Access**: View rankings even without signing in
+- **Competitive Spirit**: See how you stack up against other Wordle enthusiasts
+- **Beautiful UI**: Modern, responsive leaderboard with smooth animations
 
 ## 🌟 Future Enhancements
 

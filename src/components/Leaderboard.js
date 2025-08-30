@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './Leaderboard.scss';
 
 const Leaderboard = ({ isOpen, onClose }) => {
@@ -8,13 +8,7 @@ const Leaderboard = ({ isOpen, onClose }) => {
   const [error, setError] = useState(null);
   const [userRank, setUserRank] = useState(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchLeaderboard();
-    }
-  }, [isOpen, activeTab]);
-
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -52,7 +46,13 @@ const Leaderboard = ({ isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchLeaderboard();
+    }
+  }, [isOpen, fetchLeaderboard]);
 
   const getMockLeaderboardData = () => {
     // Mock data for demonstration

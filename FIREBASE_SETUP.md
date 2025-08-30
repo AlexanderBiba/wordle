@@ -86,6 +86,17 @@ service cloud.firestore {
 - Update your app to use production Firebase URLs
 - Set proper security rules
 
+### Leaderboard Function
+
+The leaderboard feature requires the `getLeaderboard` function to be deployed:
+
+1. **Deploy Functions**: Run `firebase deploy --only functions` from your project root
+2. **Function URL**: The leaderboard will automatically use the deployed function URL
+3. **Data Access**: The function reads from the `users` collection to generate rankings
+4. **Security**: Only public read access is needed for leaderboard data
+
+**Note**: The leaderboard function aggregates user statistics to create rankings. Make sure your Firestore rules allow reading user data for leaderboard purposes.
+
 ## 🎯 Features You'll Get
 
 Once configured, your app will have:
@@ -96,6 +107,7 @@ Once configured, your app will have:
 - ✅ **Achievement System**: Badges and milestones
 - ✅ **Progress Tracking**: Detailed performance metrics
 - ✅ **Social Features**: Share results and compete
+- ✅ **🏆 Leaderboard System**: Real-time player rankings
 
 ## 🚨 Security Notes
 
