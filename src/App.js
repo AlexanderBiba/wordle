@@ -1,7 +1,7 @@
 import "./App.scss";
 import Keyboard from "react-simple-keyboard";
 import "react-simple-keyboard/build/css/index.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { useGameState } from "./hooks/useGameState";
 import { checkAchievements } from "./achievements";
@@ -64,7 +64,7 @@ export default function App() {
     return "";
   };
 
-    const handleGameEnd = (won, attempts) => {
+    const handleGameEnd = useCallback((won, attempts) => {
     const newStats = { ...stats };
     newStats.gamesPlayed += 1;
     
@@ -104,9 +104,9 @@ export default function App() {
 
       updateUserStats(cloudStats);
     }
-  };
+  }, [stats, updateStats, user, userStats, updateUserStats]);
 
-  const onKeyDown = async ({ key }) => {
+  const onKeyDown = useCallback(async ({ key }) => {
     const {
       words,
       currWord,
@@ -212,7 +212,7 @@ export default function App() {
           currLetter: Math.min(state.currLetter + 1, WORD_LENGTH),
         });
     }
-  };
+  }, [state, loading, updateGameState, saveGameStateToFirebase, handleGameEnd]);
 
   useEffect(() => {
     document.addEventListener("keydown", onKeyDown);

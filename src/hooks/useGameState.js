@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -15,7 +15,7 @@ export const useGameState = (user) => {
   const today = getDateStr();
   
   // Default game state
-  const defaultState = {
+  const defaultState = useMemo(() => ({
     words: Array(NUM_ATTEMPTS).fill(Array(WORD_LENGTH).fill({})),
     currWord: 0,
     currLetter: 0,
@@ -25,16 +25,16 @@ export const useGameState = (user) => {
     absentLetters: {},
     foundLetters: {},
     lastPlayedDate: today,
-  };
+  }), [today]);
 
   // Default stats
-  const defaultStats = {
+  const defaultStats = useMemo(() => ({
     gamesPlayed: 0,
     gamesWon: 0,
     currentStreak: 0,
     maxStreak: 0,
     guessDistribution: Array(NUM_ATTEMPTS).fill(0),
-  };
+  }), []);
 
   const [state, setState] = useState(defaultState);
   const [stats, setStats] = useState(defaultStats);
@@ -43,20 +43,92 @@ export const useGameState = (user) => {
   const [isDirty, setIsDirty] = useState(false); // Track if state needs saving
 
   // Get user's game document reference
-  const getUserGameDoc = () => {
+  const getUserGameDoc = useCallback(() => {
     if (!user) return null;
     return doc(db, 'users', user.uid, 'games', 'current');
-  };
+  }, [user]);
 
-  const getUserStatsDoc = () => {
+  const getUserStatsDoc = useCallback(() => {
     if (!user) return null;
     return doc(db, 'users', user.uid, 'stats', 'wordle');
-  };
+  }, [user]);
 
 
+
+
+
+  // Serialize game state for Firebase (convert nested arrays to flat structure)
+  const serializeGameState = useCallback((gameState) => {
+    // Deep clone and flatten the state
+    const serialized = {
+      currWord: gameState.currWord || 0,
+      currLetter: gameState.currLetter || 0,
+      gameWon: gameState.gameWon || false,
+      gameLost: gameState.gameLost || false,
+      invalidWord: gameState.invalidWord || false,
+      lastPlayedDate: gameState.lastPlayedDate || today,
+      // Convert words array to a flat structure
+      wordsData: gameState.words.map((word, wordIndex) => 
+        word.map((letter, letterIndex) => ({
+          wordIndex,
+          letterIndex,
+          char: letter.char || '',
+          exact: letter.exact || false,
+          misplaced: letter.misplaced || false,
+          current: letter.current || false
+        }))
+      ).flat(),
+      // Convert objects to arrays for Firebase compatibility
+      absentLetters: Object.keys(gameState.absentLetters || {}),
+      foundLetters: Object.keys(gameState.foundLetters || {})
+    };
+    
+    return serialized;
+  }, [today]);
+
+  // Deserialize game state from Firebase (convert flat structure back to nested)
+  const deserializeGameState = useCallback((firebaseData) => {
+    if (!firebaseData) return defaultState;
+    
+    // Reconstruct the words array from flat data
+    const words = Array(NUM_ATTEMPTS).fill(null).map(() => Array(WORD_LENGTH).fill({}));
+    
+    if (firebaseData.wordsData) {
+      firebaseData.wordsData.forEach(letterData => {
+        const { wordIndex, letterIndex, char, exact, misplaced, current } = letterData;
+        if (wordIndex < NUM_ATTEMPTS && letterIndex < WORD_LENGTH) {
+          words[wordIndex][letterIndex] = {
+            char: char || '',
+            exact: exact || false,
+            misplaced: misplaced || false,
+            current: current || false
+          };
+        }
+      });
+    }
+    
+    return {
+      currWord: firebaseData.currWord || 0,
+      currLetter: firebaseData.currLetter || 0,
+      gameWon: firebaseData.gameWon || false,
+      gameLost: firebaseData.gameLost || false,
+      invalidWord: firebaseData.invalidWord || false,
+      lastPlayedDate: firebaseData.lastPlayedDate || today,
+
+      words: words,
+      absentLetters: (firebaseData.absentLetters || []).reduce((acc, letter) => {
+        acc[letter] = true;
+        return acc;
+      }, {}),
+      foundLetters: (firebaseData.foundLetters || []).reduce((acc, letter) => {
+        acc[letter] = true;
+        return acc;
+      }, {})
+    };
+  }, [defaultState, today]);
 
   // Load game state from Firebase
-  const loadGameState = async () => {
+  const loadGameState = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
@@ -105,77 +177,7 @@ export const useGameState = (user) => {
       console.error('Error loading game state:', error);
       setLoading(false);
     }
-  };
-
-  // Serialize game state for Firebase (convert nested arrays to flat structure)
-  const serializeGameState = (gameState) => {
-    // Deep clone and flatten the state
-    const serialized = {
-      currWord: gameState.currWord || 0,
-      currLetter: gameState.currLetter || 0,
-      gameWon: gameState.gameWon || false,
-      gameLost: gameState.gameLost || false,
-      invalidWord: gameState.invalidWord || false,
-      lastPlayedDate: gameState.lastPlayedDate || today,
-      // Convert words array to a flat structure
-      wordsData: gameState.words.map((word, wordIndex) => 
-        word.map((letter, letterIndex) => ({
-          wordIndex,
-          letterIndex,
-          char: letter.char || '',
-          exact: letter.exact || false,
-          misplaced: letter.misplaced || false,
-          current: letter.current || false
-        }))
-      ).flat(),
-      // Convert objects to arrays for Firebase compatibility
-      absentLetters: Object.keys(gameState.absentLetters || {}),
-      foundLetters: Object.keys(gameState.foundLetters || {})
-    };
-    
-    return serialized;
-  };
-
-  // Deserialize game state from Firebase (convert flat structure back to nested)
-  const deserializeGameState = (firebaseData) => {
-    if (!firebaseData) return defaultState;
-    
-    // Reconstruct the words array from flat data
-    const words = Array(NUM_ATTEMPTS).fill(null).map(() => Array(WORD_LENGTH).fill({}));
-    
-    if (firebaseData.wordsData) {
-      firebaseData.wordsData.forEach(letterData => {
-        const { wordIndex, letterIndex, char, exact, misplaced, current } = letterData;
-        if (wordIndex < NUM_ATTEMPTS && letterIndex < WORD_LENGTH) {
-          words[wordIndex][letterIndex] = {
-            char: char || '',
-            exact: exact || false,
-            misplaced: misplaced || false,
-            current: current || false
-          };
-        }
-      });
-    }
-    
-    return {
-      currWord: firebaseData.currWord || 0,
-      currLetter: firebaseData.currLetter || 0,
-      gameWon: firebaseData.gameWon || false,
-      gameLost: firebaseData.gameLost || false,
-      invalidWord: firebaseData.invalidWord || false,
-      lastPlayedDate: firebaseData.lastPlayedDate || today,
-
-      words: words,
-      absentLetters: (firebaseData.absentLetters || []).reduce((acc, letter) => {
-        acc[letter] = true;
-        return acc;
-      }, {}),
-      foundLetters: (firebaseData.foundLetters || []).reduce((acc, letter) => {
-        acc[letter] = true;
-        return acc;
-      }, {})
-    };
-  };
+  }, [user, defaultState, defaultStats, deserializeGameState, getUserGameDoc, getUserStatsDoc, serializeGameState, today]);
 
 
 
@@ -245,7 +247,7 @@ export const useGameState = (user) => {
       setDarkMode(false);
       setLoading(false);
     }
-  }, [user]);
+  }, [user, defaultState, defaultStats, loadGameState]);
 
 
 
