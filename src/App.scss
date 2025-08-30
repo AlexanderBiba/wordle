@@ -573,32 +573,70 @@ body {
 }
 
 .guess-distribution {
+  margin-top: 1.5rem;
+  
+  h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: palette.$text-primary-light;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
   .guess-row {
-  display: flex;
+    display: flex;
     align-items: center;
-    margin-bottom: 0.5rem;
-    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    gap: 1rem;
     
     .guess-number {
       width: 1.5rem;
       font-weight: 600;
       color: palette.$text-secondary-light;
+      text-align: center;
     }
     
     .guess-bar {
-  flex: 1;
-      height: 1.5rem;
-      background: palette.$gray-200;
+      flex: 1;
+      height: 2rem;
+      background: palette.$gray-100;
       border-radius: palette.$border-radius;
       overflow: hidden;
       position: relative;
+      border: 1px solid palette.$gray-200;
+      min-width: 60px; // Ensure minimum bar width
       
       .guess-fill {
         height: 100%;
         background: linear-gradient(135deg, palette.$success 0%, palette.$success-light 100%);
         border-radius: palette.$border-radius;
         transition: width animation.$transition-normal;
-        min-width: 1px;
+        min-width: 0;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        position: relative;
+        
+        // Add a subtle pattern for better visibility
+        &::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+          background-size: 4px 4px;
+        }
+      }
+      
+      .guess-empty {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: palette.$text-secondary-light;
+        font-size: 0.875rem;
+        font-weight: 500;
+        pointer-events: none;
       }
     }
     
@@ -612,14 +650,25 @@ body {
 }
 
 // Dark mode guess distribution styles
-.dark-mode .guess-distribution .guess-row {
-  .guess-number,
-  .guess-count {
-    color: palette.$text-secondary-dark;
+.dark-mode .guess-distribution {
+  h4 {
+    color: palette.$text-primary-dark;
   }
   
-  .guess-bar {
-    background: palette.$gray-700;
+  .guess-row {
+    .guess-number,
+    .guess-count {
+      color: palette.$text-secondary-dark;
+    }
+    
+    .guess-bar {
+      background: palette.$gray-800;
+      border-color: palette.$gray-600;
+      
+      .guess-empty {
+        color: palette.$text-secondary-dark;
+      }
+    }
   }
 }
 
@@ -805,8 +854,33 @@ body {
     
     .hg-button {
       height: 2.5rem;
-      min-width: 2rem;
-      font-size: 0.8rem;
+      min-width: 1.8rem;
+      font-size: 0.75rem;
+      margin: 0.1rem;
+    }
+    
+    // Ensure keyboard fits on mobile
+    .hg-row {
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    // Top row (qwertyuiop) - ensure it fits
+    .hg-row:first-child .hg-button {
+      min-width: 1.6rem;
+      font-size: 0.7rem;
+    }
+    
+    // Middle row (asdfghjkl) - ensure it fits
+    .hg-row:nth-child(2) .hg-button {
+      min-width: 1.7rem;
+      font-size: 0.7rem;
+    }
+    
+    // Bottom row (backspace, zxcvbnm, enter) - ensure it fits
+    .hg-row:last-child .hg-button {
+      min-width: 1.6rem;
+      font-size: 0.7rem;
     }
   }
   
@@ -847,6 +921,30 @@ body {
     font-size: 1.5rem;
   }
   
+  // Extra small keyboard for very small screens
+  .simple-keyboard.hg-theme-default {
+    .hg-button {
+      height: 2.25rem;
+      min-width: 1.5rem;
+      font-size: 0.65rem;
+      margin: 0.05rem;
+    }
+    
+    .hg-row:first-child .hg-button {
+      min-width: 1.4rem;
+      font-size: 0.6rem;
+    }
+    
+    .hg-row:nth-child(2) .hg-button {
+      min-width: 1.5rem;
+      font-size: 0.6rem;
+    }
+    
+    .hg-row:last-child .hg-button {
+      min-width: 1.4rem;
+      font-size: 0.6rem;
+    }
+  }
   .header-actions {
     gap: 0.5rem;
   }

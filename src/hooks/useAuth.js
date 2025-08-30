@@ -99,9 +99,35 @@ export const useAuth = () => {
       
       if (userSnap.exists()) {
         setUserStats(userSnap.data().stats);
+      } else {
+        // User document doesn't exist (e.g., deleted from Firestore)
+        // Set default stats to prevent null reference errors
+        setUserStats({
+          gamesPlayed: 0,
+          gamesWon: 0,
+          currentStreak: 0,
+          maxStreak: 0,
+          totalGuesses: 0,
+          averageGuesses: 0,
+          bestTime: null,
+          achievements: [],
+          guessDistribution: Array(6).fill(0)
+        });
       }
     } catch (error) {
       console.error('Error getting user stats:', error);
+      // Set default stats on error as well
+      setUserStats({
+        gamesPlayed: 0,
+        gamesWon: 0,
+        currentStreak: 0,
+        maxStreak: 0,
+        totalGuesses: 0,
+        averageGuesses: 0,
+        bestTime: null,
+        achievements: [],
+        guessDistribution: Array(6).fill(0)
+      });
     }
   };
 

@@ -209,6 +209,22 @@ export const checkAchievements = (stats, gameResult) => {
 };
 
 export const getAchievementProgress = (stats) => {
+  // Handle case where stats is null or undefined
+  if (!stats) {
+    return {
+      streak: {
+        current: 0,
+        next: 3,
+        percentage: 0
+      },
+      games: {
+        current: 0,
+        next: 10,
+        percentage: 0
+      }
+    };
+  }
+  
   const progress = {};
   
   // Streak progress

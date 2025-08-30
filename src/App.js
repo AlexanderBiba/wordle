@@ -125,7 +125,7 @@ export default function App() {
         if (currLetter < WORD_LENGTH) return;
         const guessRequest = new URL(
           "checkWord",
-          "https://us-central1-wordle-117cf.cloudfunctions.net"
+          "https://words-935269737264.europe-west1.run.app"
         );
         guessRequest.searchParams.append(
           "word",
@@ -428,8 +428,14 @@ export default function App() {
                   <div className="guess-bar">
                     <div 
                       className="guess-fill" 
-                      style={{ width: `${Math.max(count, 1)}px` }}
+                      style={{ 
+                        width: count > 0 ? `${(count / Math.max(...stats.guessDistribution)) * 100}%` : '0%',
+                        opacity: count > 0 ? 1 : 0.3
+                      }}
                     />
+                    {count === 0 && (
+                      <span className="guess-empty">—</span>
+                    )}
                   </div>
                   <span className="guess-count">{count}</span>
                 </div>

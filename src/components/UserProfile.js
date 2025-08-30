@@ -9,6 +9,24 @@ const UserProfile = ({ isOpen, onClose }) => {
   
   if (!isOpen || !user) return null;
 
+  // Handle case where userStats might be null (e.g., user deleted from Firestore)
+  // This should never happen now due to useAuth fixes, but adding extra safety
+  if (!userStats) {
+    return (
+      <div className="user-profile-overlay" onClick={onClose}>
+        <div className="user-profile" onClick={e => e.stopPropagation()}>
+          <div className="profile-header">
+            <h2>User Profile</h2>
+            <button className="close-btn" onClick={onClose}>×</button>
+          </div>
+          <div className="profile-content">
+            <p>User data not found. Please sign in again.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const progress = getAchievementProgress(userStats);
   const earnedAchievements = userStats?.achievements || [];
   const totalAchievements = Object.keys(ACHIEVEMENTS).length;
@@ -98,7 +116,7 @@ const UserProfile = ({ isOpen, onClose }) => {
                 <div className="stat-card">
                   <div className="stat-number">
                     {userStats?.gamesPlayed > 0 
-                      ? Math.round((userStats.gamesWon / userStats.gamesPlayed) * 100)
+                      ? Math.round(((userStats?.gamesWon || 0) / userStats.gamesPlayed) * 100)
                       : 0}%
                   </div>
                   <div className="stat-label">Win Rate</div>
@@ -114,7 +132,7 @@ const UserProfile = ({ isOpen, onClose }) => {
                 <div className="stat-card">
                   <div className="stat-number">
                     {userStats?.gamesPlayed > 0 
-                      ? (userStats.totalGuesses / userStats.gamesPlayed).toFixed(1)
+                      ? ((userStats?.totalGuesses || 0) / userStats.gamesPlayed).toFixed(1)
                       : 0}
                   </div>
                   <div className="stat-label">Avg Guesses</div>
