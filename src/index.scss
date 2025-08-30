@@ -26,6 +26,8 @@ body {
   line-height: 1.6;
   color: palette.$text-primary-light;
   transition: background animation.$transition-normal;
+  min-height: 100vh;
+  width: 100%;
   
   &.dark-mode {
     background: palette.$background-dark;
@@ -35,6 +37,7 @@ body {
 
 #root {
   height: 100%;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: flex-start;
