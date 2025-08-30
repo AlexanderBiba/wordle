@@ -1,19 +1,30 @@
 @use 'palette';
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap');
+
+// Import modern Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 html {
-    height: 100%;
-	font-family: 'Open Sans', sans-serif;
-    background: palette.$white;
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  background: palette.$background;
+  scroll-behavior: smooth;
 }
 
 body {
-    height: 100%;
-    margin: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  line-height: 1.6;
+  color: palette.$gray-900;
 }
 
 #root {
-    height: 100%;
-    display: flex;
-    justify-content: center;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
 }

@@ -1,170 +1,563 @@
 @use "palette";
 @use "animation";
 
+// Reset and base styles
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, palette.$background 0%, palette.$gray-50 100%);
+  min-height: 100vh;
+}
+
 .app {
-  text-align: center;
-  height: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  align-items: stretch;
-  flex: 1;
-  background-color: palette.$white;
-  background-image: radial-gradient(palette.$dark 0.5px, transparent 0.5px),
-    radial-gradient(palette.$dark 0.5px, transparent 0.5px);
-  background-size: 20px 20px;
-  background-position: 0 0, 10px 10px;
-}
-
-.header {
-  background: palette.$dark;
-  box-shadow: 0 0px 2px 2px palette.$dark;
-  color: palette.$white;
-  height: 64px;
-  line-height: 64px;
-  margin: 0;
-}
-
-.status-wrapper {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  justify-items: center;
-  flex: 0.23;
+  padding: 1rem;
+  background: linear-gradient(135deg, palette.$background 0%, palette.$gray-50 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+// Modern header with gradient and shadow
+.header {
+  background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-dark 100%);
+  color: palette.$white;
+  padding: 1.5rem 2rem;
+  margin: 0 0 2rem 0;
+  border-radius: palette.$border-radius-lg;
+  box-shadow: palette.$shadow-lg;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  text-align: center;
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+// Status wrapper with modern styling
+.status-wrapper {
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 600px;
 }
 
 .status-text {
-  padding: 0.2em;
-  border-radius: 0.3em;
-
+  padding: 1rem 1.5rem;
+  border-radius: palette.$border-radius;
+  font-weight: 500;
+  font-size: 1.1rem;
+  text-align: center;
+  transition: animation.$transition-normal;
+  box-shadow: palette.$shadow;
+  background: palette.$surface;
+  border: 1px solid palette.$gray-200;
+  
   &.win {
-    background: palette.$green;
+    background: linear-gradient(135deg, palette.$success 0%, palette.$success-light 100%);
+    color: palette.$white;
+    border-color: palette.$success;
+    box-shadow: palette.$shadow-lg, 0 0 20px rgba(palette.$success, 0.3);
+    animation: scaleIn 0.5s ease-out;
+    
     .status {
-      background: inherit;
+      background: transparent;
+      color: palette.$white;
     }
   }
 
   &.lose {
-    background: palette.$gray;
+    background: linear-gradient(135deg, palette.$error 0%, palette.$error-light 100%);
+    color: palette.$white;
+    border-color: palette.$error;
+    
     .status {
-      background: inherit;
+      background: transparent;
+      color: palette.$white;
     }
   }
 
   &.invalid {
-    background: palette.$red;
+    background: linear-gradient(135deg, palette.$warning 0%, palette.$warning-light 100%);
+    color: palette.$white;
+    border-color: palette.$warning;
+    animation: shake 0.5s ease-in-out;
+    
     .status {
-      background: inherit;
+      background: transparent;
+      color: palette.$white;
+    }
+  }
+
+  &.loading {
+    background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-light 100%);
+    color: palette.$white;
+    border-color: palette.$primary;
+    
+    .status {
+      background: transparent;
+      color: palette.$white;
     }
   }
 }
 
 .status {
-  color: palette.$dark;
-  background: palette.$white;
-  font-size: 1.5em;
+  color: palette.$gray-700;
+  background: transparent;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 0;
+  border-radius: 0;
 }
 
-.keyboard-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 1em;
-}
-
-@keyframes blink {
-  50% {
-    box-shadow: 0 0px 2px 2px #2b2b2b80;
-  }
-}
-
-.simple-keyboard.hg-theme-default {
-  margin: 0.25em 0 0 0;
-  background: palette.$gray;
-  max-width: 480px;
-  border-radius: 5px 5px 0 0;
-  box-shadow: palette.$easy-box-shadow;
-
-  & .found-letter {
-    background: palette.$green;
-  }
-
-  & .absent-letter {
-    background: palette.$emphasis-letter;
-  }
-
-  & .emphasis {
-    background: palette.$cursor;
-    animation: ripple 1s infinite;
-    border-bottom: 0;
-  }
-}
-
+// Wordle game board with modern card design
 .wordle-wrapper {
-  display: flex;
-  flex: 1;
-  align-items: stretch;
-  justify-content: center;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 600px;
 }
 
 .wordle {
   display: flex;
   flex-direction: column;
-  margin: 0.25em 0;
-  background: palette.$gray;
-  border-radius: 0.3em;
-  flex: 1;
-  max-width: 380px;
-  max-height: 420px;
-  box-shadow: palette.$easy-box-shadow;
+  gap: 0.75rem;
+  padding: 2rem;
+  background: palette.$surface;
+  border-radius: palette.$border-radius-xl;
+  box-shadow: palette.$shadow-xl;
+  border: 1px solid palette.$gray-200;
+  min-height: 400px;
+  justify-content: center;
+}
+
+.word {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+  height: 4rem;
+  transition: animation.$transition-normal;
+
+  &.current {
+    .letter {
+      border-color: palette.$primary;
+      box-shadow: 0 0 0 2px rgba(palette.$primary, 0.2);
+    }
+  }
+
+  &.invalid {
+    animation: shake 0.5s ease-in-out;
+  }
 }
 
 .letter {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0.15em 0.2em;
-  border-bottom: 1px solid #b5b5b5;
-  border-radius: 5px;
-  box-shadow: 0 0 3px -1px rgb(0 0 0 / 30%);
-  font-weight: bold;
+  width: 4rem;
+  height: 4rem;
+  border: 2px solid palette.$gray-300;
+  border-radius: palette.$border-radius;
+  font-size: 1.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
   background: palette.$white;
-  flex: 1;
+  color: palette.$gray-900;
+  transition: all animation.$transition-normal;
+  position: relative;
+  overflow: hidden;
+  
+  // Letter flip animation
+  &.exact, &.misplaced {
+    animation: flip 0.6s ease-in-out;
+  }
 
   &.empty {
-    background: repeating-linear-gradient(
-        135deg,
-      palette.$white 0 2px,
-      transparent 2px 3px
-      );
+    background: palette.$gray-50;
+    border-style: dashed;
+    border-color: palette.$gray-200;
+    color: transparent;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      background: palette.$gray-300;
+      border-radius: 50%;
+    }
   }
 
   &.exact {
-    background: palette.$green;
+    background: linear-gradient(135deg, palette.$success 0%, palette.$success-light 100%);
+    color: palette.$white;
+    border-color: palette.$success;
+    box-shadow: palette.$shadow-md, 0 0 20px rgba(palette.$success, 0.3);
+    transform: scale(1.05);
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+      animation: shimmer 2s ease-in-out infinite;
+    }
   }
 
   &.misplaced {
-    background: palette.$yellow;
+    background: linear-gradient(135deg, palette.$warning 0%, palette.$warning-light 100%);
+    color: palette.$white;
+    border-color: palette.$warning;
+    box-shadow: palette.$shadow-md, 0 0 20px rgba(palette.$warning, 0.3);
+    transform: scale(1.05);
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+      animation: shimmer 2s ease-in-out infinite;
+    }
   }
 
   &.current {
-    background: palette.$cursor;
-    animation: ripple 1s infinite;
-    border-bottom: 0;
+    background: palette.$primary;
+    color: palette.$white;
+    border-color: palette.$primary;
+    animation: ripple 2s infinite;
+    transform: scale(1.05);
+    box-shadow: palette.$shadow-md, 0 0 20px rgba(palette.$primary, 0.3);
+  }
+
+  span {
+    transition: animation.$transition-fast;
+    position: relative;
+    z-index: 1;
+  }
+  
+  cursor: default;
+}
+
+// Modern keyboard styling
+.keyboard-wrapper {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 1rem;
+}
+
+.simple-keyboard.hg-theme-default {
+  background: palette.$surface;
+  border-radius: palette.$border-radius-lg;
+  box-shadow: palette.$shadow-xl;
+  border: 1px solid palette.$gray-200;
+  padding: 1rem;
+  margin: 0;
+
+  .hg-button {
+    background: palette.$gray-100;
+    border: 1px solid palette.$gray-200;
+    border-radius: palette.$border-radius;
+    color: palette.$gray-700;
+    font-weight: 600;
+    font-size: 0.9rem;
+    height: 3rem;
+    min-width: 2.5rem;
+    transition: all animation.$transition-fast;
+    box-shadow: palette.$shadow-sm;
+    cursor: pointer;
+    user-select: none;
+    
+    &:hover {
+      background: palette.$gray-200;
+      transform: translateY(-1px);
+      box-shadow: palette.$shadow-md;
+    }
+    
+    &:active {
+      transform: translateY(0);
+      box-shadow: palette.$shadow-sm;
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(palette.$primary, 0.3);
+    }
+  }
+
+  .found-letter {
+    background: linear-gradient(135deg, palette.$success 0%, palette.$success-light 100%);
+    color: palette.$white;
+    border-color: palette.$success;
+    box-shadow: palette.$shadow-md;
+    
+    &:hover {
+      background: linear-gradient(135deg, palette.$success-light 0%, palette.$success 100%);
+      transform: translateY(-1px);
+      box-shadow: palette.$shadow-lg;
+    }
+  }
+
+  .absent-letter {
+    background: linear-gradient(135deg, palette.$error 0%, palette.$error-light 100%);
+    color: palette.$white;
+    border-color: palette.$error;
+    box-shadow: palette.$shadow-md;
+    
+    &:hover {
+      background: linear-gradient(135deg, palette.$error-light 0%, palette.$error 100%);
+      transform: translateY(-1px);
+      box-shadow: palette.$shadow-lg;
+    }
+  }
+
+  .emphasis {
+    background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-light 100%);
+    color: palette.$white;
+    border-color: palette.$primary;
+    box-shadow: palette.$shadow-md, 0 0 20px rgba(palette.$primary, 0.3);
+    animation: pulse 2s infinite;
+    
+    &:hover {
+      background: linear-gradient(135deg, palette.$primary-light 0%, palette.$primary 100%);
+      transform: translateY(-1px);
+      box-shadow: palette.$shadow-lg, 0 0 30px rgba(palette.$primary, 0.4);
+    }
   }
 }
 
-.word {
-  display: flex;
-  flex: 1;
-  border: thin solid palette.$gray;
-
-  &.current {
-    outline: medium solid palette.$dark;
-    border-radius: 5px;
-    z-index: 1;
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: palette.$shadow-md, 0 0 20px rgba(palette.$primary, 0.3);
   }
+  50% {
+    box-shadow: palette.$shadow-md, 0 0 30px rgba(palette.$primary, 0.5);
+  }
+}
 
-  &.invalid {
-    background: palette.$red;
+// Statistics Display
+.stats-wrapper {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 2rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.stats {
+  background: palette.$surface;
+  border-radius: palette.$border-radius-xl;
+  box-shadow: palette.$shadow-xl;
+  border: 1px solid palette.$gray-200;
+  padding: 2rem;
+  text-align: center;
+  
+  h3 {
+    margin: 0 0 1.5rem 0;
+    color: palette.$gray-900;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  
+  h4 {
+    margin: 2rem 0 1rem 0;
+    color: palette.$gray-800;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+  
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: palette.$primary;
+    line-height: 1;
+  }
+  
+  .stat-label {
+    font-size: 0.875rem;
+    color: palette.$gray-600;
+    font-weight: 500;
+    margin-top: 0.25rem;
+  }
+}
+
+.guess-distribution {
+  .guess-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    gap: 0.75rem;
+    
+    .guess-number {
+      width: 1.5rem;
+      font-weight: 600;
+      color: palette.$gray-700;
+    }
+    
+    .guess-bar {
+      flex: 1;
+      height: 1.5rem;
+      background: palette.$gray-200;
+      border-radius: palette.$border-radius;
+      overflow: hidden;
+      position: relative;
+      
+      .guess-fill {
+        height: 100%;
+        background: linear-gradient(135deg, palette.$success 0%, palette.$success-light 100%);
+        border-radius: palette.$border-radius;
+        transition: width animation.$transition-normal;
+        min-width: 1px;
+      }
+    }
+    
+    .guess-count {
+      width: 2rem;
+      text-align: right;
+      font-weight: 600;
+      color: palette.$gray-700;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .app {
+    padding: 0.5rem;
+  }
+  
+  .header {
+    font-size: 2rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .wordle {
+    padding: 1.5rem;
+    gap: 0.5rem;
+  }
+  
+  .letter {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.5rem;
+  }
+  
+  .word {
+    gap: 0.5rem;
+    height: 3.5rem;
+  }
+  
+  .simple-keyboard.hg-theme-default {
+    padding: 0.75rem;
+    
+    .hg-button {
+      height: 2.5rem;
+      min-width: 2rem;
+      font-size: 0.8rem;
+    }
+  }
+  
+  .stats {
+    padding: 1.5rem;
+    
+    h3 {
+      font-size: 1.25rem;
+    }
+  }
+  
+  .stats-grid {
+    gap: 0.75rem;
+  }
+  
+  .stat-item .stat-number {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .letter {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.25rem;
+  }
+  
+  .word {
+    gap: 0.4rem;
+    height: 3rem;
+  }
+  
+  .header {
+    font-size: 1.75rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  .stats {
+    padding: 1rem;
+    
+    h3 {
+      font-size: 1.125rem;
+    }
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .guess-distribution .guess-row {
+    gap: 0.5rem;
+    
+    .guess-number {
+      width: 1.25rem;
+      font-size: 0.875rem;
+    }
+    
+    .guess-count {
+      width: 1.5rem;
+      font-size: 0.875rem;
+    }
   }
 }

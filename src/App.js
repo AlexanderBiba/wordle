@@ -31,6 +31,14 @@ export default function App() {
     localStorage.setItem("date", today);
   }
   const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useLocalStorage("wordleStats", {
+    gamesPlayed: 0,
+    gamesWon: 0,
+    currentStreak: 0,
+    maxStreak: 0,
+    guessDistribution: Array(NUM_ATTEMPTS).fill(0),
+  });
+  
   const [state, setState] = useLocalStorage("wordleState", {
     words: Array(NUM_ATTEMPTS).fill(Array(WORD_LENGTH).fill({})),
     currWord: 0,
@@ -41,6 +49,43 @@ export default function App() {
     absentLetters: {},
     foundLetters: {},
   });
+
+  const getStatusMessage = () => {
+    if (loading) return "Checking word...";
+    if (state.gameWon) return "🎉 Amazing! You got it! Come back tomorrow for a new challenge!";
+    if (state.gameLost) return "😔 Game over! The word was tough today. Try again tomorrow!";
+    if (state.invalidWord) return "❌ Not a valid word. Try something else!";
+    if (state.currWord) {
+      const attemptsLeft = NUM_ATTEMPTS - state.currWord;
+      return `${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} left`;
+    }
+    return `Welcome to Wordle! Guess the ${WORD_LENGTH}-letter word in ${NUM_ATTEMPTS} attempts.`;
+  };
+
+  const getStatusClass = () => {
+    if (loading) return "loading";
+    if (state.gameWon) return "win";
+    if (state.gameLost) return "lose";
+    if (state.invalidWord) return "invalid";
+    return "";
+  };
+
+  const updateStats = (won, attempts) => {
+    const newStats = { ...stats };
+    newStats.gamesPlayed += 1;
+    
+    if (won) {
+      newStats.gamesWon += 1;
+      newStats.currentStreak += 1;
+      newStats.maxStreak = Math.max(newStats.maxStreak, newStats.currentStreak);
+      newStats.guessDistribution[attempts - 1] += 1;
+    } else {
+      newStats.currentStreak = 0;
+    }
+    
+    setStats(newStats);
+  };
+
   const onKeyDown = async ({ key }) => {
     const {
       words,
@@ -96,13 +141,19 @@ export default function App() {
           });
         });
         const gameWon = tmpWords[currWord].every((letter) => letter.exact);
+        const gameLost = currWord === NUM_ATTEMPTS - 1 && !gameWon;
+        
+        if (gameWon || gameLost) {
+          updateStats(gameWon, currWord + 1);
+        }
+        
         setState({
           ...state,
           words: tmpWords,
           currWord: gameWon ? null : currWord + 1,
           currLetter: gameWon ? null : 0,
           gameWon: gameWon,
-          gameLost: currWord === NUM_ATTEMPTS - 1 && !gameWon,
+          gameLost: gameLost,
           absentLetters,
           foundLetters,
         });
@@ -111,11 +162,11 @@ export default function App() {
         setState({
           ...state,
           words: words.map((word, i) =>
-            i === currWord
-              ? word.map((letter, j) => (j === currLetter - 1 ? {} : letter))
+            i === state.currWord
+              ? word.map((letter, j) => (j === state.currLetter - 1 ? {} : letter))
               : word
           ),
-          currLetter: Math.max(currLetter - 1, 0),
+          currLetter: Math.max(state.currLetter - 1, 0),
         });
         break;
       default:
@@ -124,11 +175,11 @@ export default function App() {
         setState({
           ...state,
           words: words.map((word, i) =>
-            i === currWord
-              ? word.map((letter, j) => (j === currLetter ? { char } : letter))
+            i === state.currWord
+              ? word.map((letter, j) => (j === state.currLetter ? { char } : letter))
               : word
           ),
-          currLetter: Math.min(currLetter + 1, WORD_LENGTH),
+          currLetter: Math.min(state.currLetter + 1, WORD_LENGTH),
         });
     }
   };
@@ -138,49 +189,27 @@ export default function App() {
     return () => document.removeEventListener("keydown", onKeyDown);
   });
 
+  const winPercentage = stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
+
   return (
     <div className="app">
-      <h1 className="header">Daily Wordle</h1>
+      <h1 className="header">
+        <span role="img" aria-label="puzzle">🧩</span> Wordle
+      </h1>
+      
       <div className="status-wrapper">
-        <div
-          className={["status-text"]
-            .concat(
-              loading
-                ? ["loading"]
-                : state.invalidWord
-                ? ["invalid"]
-                : state.gameWon
-                ? ["win"]
-                : state.gameLost
-                ? ["lose"]
-                : []
-            )
-            .join(" ")}
-        >
-          <mark className="status">
-            {loading
-              ? "Checking word..."
-              : state.gameWon
-              ? "Great job come back tomorrow!"
-              : state.gameLost
-              ? "Game over try again tomorrow!"
-              : state.invalidWord
-              ? "Invalid word Erase and try again"
-              : state.currWord
-              ? `${NUM_ATTEMPTS - state.currWord} attempts left`
-              : `Try guessing the ${WORD_LENGTH} letter word in ${NUM_ATTEMPTS} attempts`}
-          </mark>
+        <div className={`status-text ${getStatusClass()}`}>
+          <div className="status">{getStatusMessage()}</div>
         </div>
       </div>
+
       <div className="wordle-wrapper">
         <div className="wordle">
           {state.words.map((word, i) => {
             const current = i === state.currWord;
-
             const classes = [];
             if (current) classes.push("current");
-            if (i === state.currWord && state.invalidWord)
-              classes.push("invalid");
+            if (i === state.currWord && state.invalidWord) classes.push("invalid");
 
             return (
               <div key={i} className={["word"].concat(classes).join(" ")}>
@@ -202,7 +231,7 @@ export default function App() {
                       key={j}
                       className={["letter"].concat(classes).join(" ")}
                     >
-                      <span>{char ?? "\0"}</span>
+                      <span>{char ?? ""}</span>
                     </div>
                   );
                 })}
@@ -211,6 +240,49 @@ export default function App() {
           })}
         </div>
       </div>
+
+      {/* Statistics Display */}
+      {(state.gameWon || state.gameLost) && (
+        <div className="stats-wrapper">
+          <div className="stats">
+            <h3>Statistics</h3>
+            <div className="stats-grid">
+              <div className="stat-item">
+                <div className="stat-number">{stats.gamesPlayed}</div>
+                <div className="stat-label">Played</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-number">{winPercentage}%</div>
+                <div className="stat-label">Win %</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-number">{stats.currentStreak}</div>
+                <div className="stat-label">Current Streak</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-number">{stats.maxStreak}</div>
+                <div className="stat-label">Max Streak</div>
+              </div>
+            </div>
+            <div className="guess-distribution">
+              <h4>Guess Distribution</h4>
+              {stats.guessDistribution.map((count, index) => (
+                <div key={index} className="guess-row">
+                  <span className="guess-number">{index + 1}</span>
+                  <div className="guess-bar">
+                    <div 
+                      className="guess-fill" 
+                      style={{ width: `${Math.max(count, 1)}px` }}
+                    />
+                  </div>
+                  <span className="guess-count">{count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="keyboard-wrapper">
         <Keyboard
           onKeyPress={(key) =>

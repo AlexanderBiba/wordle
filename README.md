@@ -1,17 +1,78 @@
-# Wordle
+# 🧩 Wordle
 
-This is a simple wordle app written in React.js with a serverless Google Cloud Functions backend and data stored in Firebase.
+A beautiful, modern Wordle game built with React and Firebase. Features a clean, responsive design with smooth animations and comprehensive statistics tracking.
 
-## Live version
+## ✨ Features
 
-https://AlexanderBiba.github.io/wordle/
+- **Modern UI/UX**: Clean, beautiful design with smooth animations and transitions
+- **Responsive Design**: Optimized for all devices (desktop, tablet, mobile)
+- **Statistics Tracking**: 
+  - Games played and win percentage
+  - Current and maximum streaks
+  - Guess distribution visualization
+- **Smooth Animations**: Letter flip animations, ripple effects, and smooth transitions
+- **Keyboard Integration**: Virtual keyboard with visual feedback
+- **Daily Challenges**: New word every day with persistent game state
+- **Local Storage**: Game progress and statistics saved locally
 
-## Implementation
+## 🎨 Design Features
 
-Frontend code [App.js](https://github.com/AlexanderBiba/wordle/blob/master/src/App.js) is written in React and uses [react-simple-keyboard](https://github.com/hodgef/react-simple-keyboard) for the keyboard. When a user submits a word, the api `checkWord` is called to validate and test the word.
+- **Modern Color Palette**: Beautiful gradients and shadows
+- **Smooth Transitions**: CSS animations and micro-interactions
+- **Card-based Layout**: Clean, organized interface
+- **Typography**: Modern font stack with proper hierarchy
+- **Visual Feedback**: Hover effects, focus states, and animations
 
-Backend code [index.js](https://github.com/AlexanderBiba/wordle/blob/master/functions/index.js) contains a single request `checkWord` that validates wrther the word is a valid English word, then comapres letter by letter the input word with the daily word, and returns an array of digits, one for every letter, 0: letter missing, 1: letter in wrong location, 2: letter in correct location
+## 🚀 Getting Started
 
-Valid 5 letter English words were extracted from [english-words](https://github.com/dwyl/english-words) and stored in a Firebase database.
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start development server: `npm start`
+4. Build for production: `npm run build`
 
-Daily word is chosen randomly from [words.js](https://github.com/AlexanderBiba/wordle/blob/master/functions/words.js). The list is derived from [google-10000-english](https://github.com/first20hours/google-10000-english).
+## 🛠️ Tech Stack
+
+- **Frontend**: React 18, SCSS
+- **Styling**: Modern CSS with custom design system
+- **Animations**: CSS animations and transitions
+- **Backend**: Firebase Cloud Functions
+- **Deployment**: GitHub Pages
+
+## 📱 Responsive Design
+
+The app is fully responsive and optimized for:
+- Desktop (1200px+)
+- Tablet (768px - 1199px)
+- Mobile (320px - 767px)
+
+## 🎯 Game Rules
+
+- Guess the 5-letter word in 6 attempts
+- Green tiles indicate correct letters in correct positions
+- Yellow tiles indicate correct letters in wrong positions
+- Gray tiles indicate letters not in the word
+- New word available every day
+
+## 🔧 Customization
+
+The design system is built with SCSS variables for easy customization:
+- Color palette in `src/_palette.scss`
+- Animation settings in `src/_animation.scss`
+- Component styles in `src/App.scss`
+
+## 📊 Statistics
+
+Track your Wordle performance with:
+- Total games played
+- Win percentage
+- Current streak
+- Maximum streak
+- Guess distribution chart
+
+## 🌟 Future Enhancements
+
+- Dark mode toggle
+- Share results functionality
+- Practice mode
+- Word hints
+- Accessibility improvements
