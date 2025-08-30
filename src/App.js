@@ -2,6 +2,9 @@ import "./App.scss";
 import Keyboard from "react-simple-keyboard";
 import "react-simple-keyboard/build/css/index.css";
 import { useState, useEffect } from "react";
+import { useAuth } from "./hooks/useAuth";
+import { checkAchievements } from "./achievements";
+import UserProfile from "./components/UserProfile";
 
 const WORD_LENGTH = 5;
 const NUM_ATTEMPTS = 6;
@@ -30,8 +33,13 @@ export default function App() {
     localStorage.clear();
     localStorage.setItem("date", today);
   }
+  
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useLocalStorage("darkMode", false);
+  const [showProfile, setShowProfile] = useState(false);
+  
+  const { user, userStats, signInWithGoogle, updateUserStats } = useAuth();
+  
   const [stats, setStats] = useLocalStorage("wordleStats", {
     gamesPlayed: 0,
     gamesWon: 0,
@@ -58,6 +66,14 @@ export default function App() {
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
+  };
+
+  const handleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      console.error('Sign in failed:', error);
+    }
   };
 
   const getStatusMessage = () => {
@@ -94,6 +110,31 @@ export default function App() {
     }
     
     setStats(newStats);
+
+    // Update cloud stats if user is signed in
+    if (user && userStats) {
+      const cloudStats = { ...userStats };
+      cloudStats.gamesPlayed += 1;
+      
+      if (won) {
+        cloudStats.gamesWon += 1;
+        cloudStats.currentStreak += 1;
+        cloudStats.maxStreak = Math.max(cloudStats.maxStreak, cloudStats.currentStreak);
+        cloudStats.guessDistribution[attempts - 1] += 1;
+        cloudStats.totalGuesses += attempts;
+      } else {
+        cloudStats.currentStreak = 0;
+        cloudStats.totalGuesses += NUM_ATTEMPTS;
+      }
+
+      // Check for new achievements
+      const newAchievements = checkAchievements(cloudStats, { guesses: attempts });
+      if (newAchievements.length > 0) {
+        cloudStats.achievements = [...(cloudStats.achievements || []), ...newAchievements];
+      }
+
+      updateUserStats(cloudStats);
+    }
   };
 
   const onKeyDown = async ({ key }) => {
@@ -207,16 +248,46 @@ export default function App() {
         <h1 className="header">
           <span role="img" aria-label="puzzle">🧩</span> Wordle
         </h1>
-        <button 
-          className={`theme-toggle ${darkMode ? 'dark' : 'light'}`}
-          onClick={toggleDarkMode}
-          aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
-        >
-          <span className="toggle-icon">
-            {darkMode ? '☀️' : '🌙'}
-          </span>
-        </button>
+        <div className="header-actions">
+          {user && (
+            <button 
+              className="profile-btn"
+              onClick={() => setShowProfile(true)}
+              aria-label="Open user profile"
+            >
+              <img 
+                src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=2563eb&color=fff&size=120`}
+                alt={user.displayName}
+                className="profile-avatar"
+                onError={(e) => {
+                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=2563eb&color=fff&size=120`;
+                }}
+              />
+            </button>
+          )}
+          <button 
+            className={`theme-toggle ${darkMode ? 'dark' : 'light'}`}
+            onClick={toggleDarkMode}
+            aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+          >
+            <span className="toggle-icon">
+              {darkMode ? '☀️' : '🌙'}
+            </span>
+          </button>
+        </div>
       </div>
+      
+      {!user && (
+        <div className="login-prompt">
+          <div className="login-content">
+            <h3>🎯 Sign in to track your progress!</h3>
+            <p>Save your stats, earn achievements, and compete with friends</p>
+            <button className="login-btn" onClick={handleSignIn}>
+              <span role="img" aria-label="google">🔍</span> Sign in with Google
+            </button>
+          </div>
+        </div>
+      )}
       
       <div className="status-wrapper">
         <div className={`status-text ${getStatusClass()}`}>
@@ -385,6 +456,12 @@ export default function App() {
           physicalKeyboardHighlight={true}
         />
       </div>
+
+      {/* User Profile Modal */}
+      <UserProfile 
+        isOpen={showProfile} 
+        onClose={() => setShowProfile(false)} 
+      />
     </div>
   );
 }

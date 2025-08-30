@@ -66,6 +66,14 @@ body {
   }
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
 // Modern header title
 .header {
   color: palette.$white;
@@ -76,6 +84,46 @@ body {
   text-align: left;
   position: relative;
   z-index: 1;
+}
+
+// Profile button
+.profile-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  transition: all animation.$transition-normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  }
+  
+  .profile-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
 }
 
 // Theme toggle button
@@ -125,6 +173,80 @@ body {
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
+}
+
+// Login prompt
+.login-prompt {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 2rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.login-content {
+  background: palette.$surface;
+  border-radius: palette.$border-radius-xl;
+  box-shadow: palette.$shadow-xl;
+  border: 1px solid palette.$border-light;
+  padding: 2rem;
+  text-align: center;
+  transition: all animation.$transition-normal;
+  
+  .dark-mode & {
+    background: palette.$surface-dark;
+    border-color: palette.$border-dark;
+    box-shadow: palette.$shadow-xl-dark;
+  }
+  
+  h3 {
+    margin: 0 0 1rem 0;
+    color: palette.$text-primary-light;
+    font-size: 1.5rem;
+    font-weight: 700;
+    
+    .dark-mode & {
+      color: palette.$text-primary-dark;
+    }
+  }
+  
+  p {
+    margin: 0 0 1.5rem 0;
+    color: palette.$text-secondary-light;
+    font-size: 1rem;
+    
+    .dark-mode & {
+      color: palette.$text-secondary-dark;
+    }
+  }
+  
+  .login-btn {
+    background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-light 100%);
+    color: palette.$white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: palette.$border-radius-lg;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all animation.$transition-normal;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: palette.$shadow-lg;
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+    
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(palette.$primary, 0.3);
+    }
+  }
 }
 
 // Status wrapper with modern styling
@@ -626,6 +748,15 @@ body {
     font-size: 1.75rem;
   }
   
+  .header-actions {
+    gap: 0.75rem;
+  }
+  
+  .profile-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  
   .theme-toggle {
     min-width: 2.75rem;
     height: 2.75rem;
@@ -697,6 +828,15 @@ body {
   
   .header {
     font-size: 1.5rem;
+  }
+  
+  .header-actions {
+    gap: 0.5rem;
+  }
+  
+  .profile-btn {
+    width: 2.5rem;
+    height: 2.5rem;
   }
   
   .theme-toggle {
