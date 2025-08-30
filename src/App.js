@@ -16,20 +16,33 @@ const NUM_ATTEMPTS = 6;
 export default function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [minLoadingTime, setMinLoadingTime] = useState(true);
   
-  const { user, userStats, signInWithGoogle, updateUserStats } = useAuth();
+  const { user, userStats, signInWithGoogle, updateUserStats, loading: authLoading } = useAuth();
   
   // Use Firebase-based game state management
   const {
     state,
     stats,
     darkMode,
-    loading,
+    loading: gameLoading,
     updateGameState,
     updateStats,
     toggleDarkMode,
     saveGameStateToFirebase
   } = useGameState(user);
+
+  // Combined loading state for app initialization
+  const isAppLoading = authLoading || gameLoading || minLoadingTime;
+
+  // Minimum loading time to prevent flickering
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinLoadingTime(false);
+    }, 1000); // Show loading for at least 1 second
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Apply dark mode to document body
   useEffect(() => {
@@ -47,7 +60,7 @@ export default function App() {
   };
 
   const getStatusMessage = () => {
-    if (loading) return "Checking word...";
+    if (gameLoading) return "Checking word...";
     if (state.gameWon) return "🎉 Amazing! You got it! Come back tomorrow for a new challenge!";
     if (state.gameLost) return "😔 Game over! The word was tough today. Try again tomorrow!";
     if (state.invalidWord) return "❌ Not a valid word. Try something else!";
@@ -59,7 +72,7 @@ export default function App() {
   };
 
   const getStatusClass = () => {
-    if (loading) return "loading";
+    if (gameLoading) return "loading";
     if (state.gameWon) return "win";
     if (state.gameLost) return "lose";
     if (state.invalidWord) return "invalid";
@@ -119,7 +132,7 @@ export default function App() {
       absentLetters,
       foundLetters,
     } = state;
-    if (loading || gameWon || gameLost || (invalidWord && key !== "Backspace"))
+    if (gameLoading || gameWon || gameLost || (invalidWord && key !== "Backspace"))
       return;
     state.invalidWord = false;
     switch (key) {
@@ -214,7 +227,7 @@ export default function App() {
           currLetter: Math.min(state.currLetter + 1, WORD_LENGTH),
         });
     }
-  }, [state, loading, updateGameState, saveGameStateToFirebase, handleGameEnd]);
+  }, [state, gameLoading, updateGameState, saveGameStateToFirebase, handleGameEnd]);
 
   useEffect(() => {
     document.addEventListener("keydown", onKeyDown);
@@ -224,6 +237,24 @@ export default function App() {
 
 
   const winPercentage = stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
+
+  // Show app loading screen while initializing
+  if (isAppLoading) {
+    return (
+      <div className={`app ${darkMode ? 'dark-mode' : ''}`}>
+        <div className="app-loading">
+          <div className="loading-content">
+            <div className="loading-logo">
+              <span role="img" aria-label="puzzle">🧩</span>
+              <h1>Wordle</h1>
+            </div>
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading your game...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`app ${darkMode ? 'dark-mode' : ''}`}>
