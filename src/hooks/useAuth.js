@@ -146,12 +146,18 @@ export const useAuth = () => {
     }
   };
 
+  const refreshUserStats = async () => {
+    if (!user) return;
+    await getUserStats(user.uid);
+  };
+
   return {
     user,
     userStats,
     loading,
     signInWithGoogle,
     signOutUser,
-    updateUserStats
+    updateUserStats,
+    refreshUserStats
   };
 }; 

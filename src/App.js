@@ -17,7 +17,7 @@ export default function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   
-  const { user, userStats, signInWithGoogle, updateUserStats } = useAuth();
+  const { user, userStats, signInWithGoogle, updateUserStats, refreshUserStats } = useAuth();
   
   // Use Firebase-based game state management
   const {
@@ -105,8 +105,13 @@ export default function App() {
       }
 
       updateUserStats(cloudStats);
+      
+      // Refresh user stats to ensure profile shows updated data
+      setTimeout(() => {
+        refreshUserStats();
+      }, 100);
     }
-  }, [stats, updateStats, user, userStats, updateUserStats]);
+  }, [stats, updateStats, user, userStats, updateUserStats, refreshUserStats]);
 
   const onKeyDown = useCallback(async ({ key }) => {
     const {
@@ -410,7 +415,7 @@ export default function App() {
       </div>
 
       {/* Statistics Display */}
-      {(state.gameWon || state.gameLost) && (
+      {(state.gameWon || state.gameLost) && user && (
         <div className="stats-wrapper">
           <div className="stats">
             <h3>Statistics</h3>

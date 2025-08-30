@@ -54,13 +54,15 @@ const Leaderboard = ({ isOpen, onClose }) => {
     }
   }, [isOpen, fetchLeaderboard]);
 
+
+
   const getMockLeaderboardData = () => {
     // Mock data for demonstration
     return [
       {
         uid: '1',
-        displayName: 'WordleMaster',
-        photoURL: 'https://ui-avatars.com/api/?name=WordleMaster&background=10b981&color=fff&size=120',
+        displayName: 'Sarah J.',
+        photoURL: 'https://ui-avatars.com/api/?name=Sarah+J&background=10b981&color=fff&size=120',
         stats: {
           gamesPlayed: 150,
           gamesWon: 142,
@@ -72,8 +74,8 @@ const Leaderboard = ({ isOpen, onClose }) => {
       },
       {
         uid: '2',
-        displayName: 'PuzzlePro',
-        photoURL: 'https://ui-avatars.com/api/?name=PuzzlePro&background=3b82f6&color=fff&size=120',
+        displayName: 'Michael C.',
+        photoURL: 'https://ui-avatars.com/api/?name=Michael+C&background=3b82f6&color=fff&size=120',
         stats: {
           gamesPlayed: 89,
           gamesWon: 82,
@@ -85,8 +87,8 @@ const Leaderboard = ({ isOpen, onClose }) => {
       },
       {
         uid: '3',
-        displayName: 'BrainTeaser',
-        photoURL: 'https://ui-avatars.com/api/?name=BrainTeaser&background=f59e0b&color=fff&size=120',
+        displayName: 'Emma R.',
+        photoURL: 'https://ui-avatars.com/api/?name=Emma+R&background=f59e0b&color=fff&size=120',
         stats: {
           gamesPlayed: 67,
           gamesWon: 58,
@@ -98,8 +100,8 @@ const Leaderboard = ({ isOpen, onClose }) => {
       },
       {
         uid: '4',
-        displayName: 'WordWizard',
-        photoURL: 'https://ui-avatars.com/api/?name=WordWizard&background=8b5cf6&color=fff&size=120',
+        displayName: 'David K.',
+        photoURL: 'https://ui-avatars.com/api/?name=David+K&background=8b5cf6&color=fff&size=120',
         stats: {
           gamesPlayed: 45,
           gamesWon: 38,
@@ -111,8 +113,8 @@ const Leaderboard = ({ isOpen, onClose }) => {
       },
       {
         uid: '5',
-        displayName: 'LetterLearner',
-        photoURL: 'https://ui-avatars.com/api/?name=LetterLearner&background=ef4444&color=fff&size=120',
+        displayName: 'Lisa T.',
+        photoURL: 'https://ui-avatars.com/api/?name=Lisa+T&background=ef4444&color=fff&size=120',
         stats: {
           gamesPlayed: 23,
           gamesWon: 18,

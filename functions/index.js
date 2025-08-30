@@ -75,6 +75,7 @@ functions.http('router', (req, res) => {
         const { metric = 'winRate' } = req.query;
         
         // Get all users with their stats
+        // Note: Display names are formatted for privacy (first name + last initial only)
         const usersSnapshot = await db.collection('users').get();
         const users = [];
         
@@ -84,9 +85,23 @@ functions.http('router', (req, res) => {
             // Calculate win rate
             const winRate = Math.round((userData.stats.gamesWon / userData.stats.gamesPlayed) * 100);
             
+            // Format display name for privacy (first name + last initial)
+            const formatDisplayName = (fullName) => {
+              if (!fullName) return 'Anonymous';
+              
+              const nameParts = fullName.trim().split(' ');
+              if (nameParts.length === 1) return fullName;
+              
+              const firstName = nameParts[0];
+              const lastName = nameParts[nameParts.length - 1];
+              const lastNameInitial = lastName.charAt(0).toUpperCase();
+              
+              return `${firstName} ${lastNameInitial}.`;
+            };
+            
             users.push({
               uid: doc.id,
-              displayName: userData.displayName || 'Anonymous',
+              displayName: formatDisplayName(userData.displayName),
               photoURL: userData.photoURL || null,
               stats: {
                 ...userData.stats,
@@ -195,75 +210,6 @@ functions.http('router', (req, res) => {
       res.status(500).send({
         error: 'INTERNAL_SERVER_ERROR',
         message: 'An unexpected error occurred.',
-      });
-    }
-  });
-});
-
-// Leaderboard function
-functions.http('getLeaderboard', (req, res) => {
-  corsHandler(req, res, async () => {
-    try {
-      const { metric = 'winRate' } = req.body;
-      
-      // Get all users with their stats
-      const usersSnapshot = await db.collection('users').get();
-      const users = [];
-      
-      usersSnapshot.forEach(doc => {
-        const userData = doc.data();
-        if (userData.stats && userData.stats.gamesPlayed > 0) {
-          // Calculate win rate
-          const winRate = Math.round((userData.stats.gamesWon / userData.stats.gamesPlayed) * 100);
-          
-          users.push({
-            uid: doc.id,
-            displayName: userData.displayName || 'Anonymous',
-            photoURL: userData.photoURL || null,
-            stats: {
-              ...userData.stats,
-              winRate: winRate
-            }
-          });
-        }
-      });
-      
-      // Sort users based on the requested metric
-      let sortedUsers = [];
-      switch (metric) {
-        case 'winRate':
-          sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
-          break;
-        case 'maxStreak':
-          sortedUsers = users.sort((a, b) => b.stats.maxStreak - a.stats.maxStreak);
-          break;
-        case 'currentStreak':
-          sortedUsers = users.sort((a, b) => b.stats.currentStreak - a.stats.currentStreak);
-          break;
-        case 'gamesPlayed':
-          sortedUsers = users.sort((a, b) => b.stats.gamesPlayed - a.stats.gamesPlayed);
-          break;
-        case 'averageGuesses':
-          sortedUsers = users.sort((a, b) => a.stats.averageGuesses - b.stats.averageGuesses);
-          break;
-        default:
-          sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
-      }
-      
-      // Return top 50 users
-      const leaderboard = sortedUsers.slice(0, 50);
-      
-      res.status(200).send({
-        leaderboard: leaderboard,
-        metric: metric,
-        totalUsers: users.length
-      });
-      
-    } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-      res.status(500).send({
-        error: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to fetch leaderboard data.',
       });
     }
   });

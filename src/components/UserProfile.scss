@@ -42,6 +42,12 @@
   .dark-mode & {
     border-bottom-color: palette.$border-dark;
   }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 }
 
 .user-info {
@@ -83,6 +89,32 @@
       font-size: 0.75rem;
       opacity: 0.8;
     }
+  }
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: palette.$gray-500;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: palette.$border-radius;
+  transition: all animation.$transition-fast;
+  
+  &:hover {
+    background: palette.$gray-100;
+    color: palette.$primary;
+    transform: rotate(180deg);
+    
+    .dark-mode & {
+      background: palette.$gray-800;
+      color: palette.$primary;
+    }
+  }
+  
+  &:active {
+    transform: rotate(360deg);
   }
 }
 

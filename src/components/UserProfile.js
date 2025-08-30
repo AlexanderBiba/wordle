@@ -4,7 +4,7 @@ import { ACHIEVEMENTS, getAchievementProgress } from '../achievements';
 import './UserProfile.scss';
 
 const UserProfile = ({ isOpen, onClose }) => {
-  const { user, userStats, signOutUser } = useAuth();
+  const { user, userStats, signOutUser, refreshUserStats } = useAuth();
   const [activeTab, setActiveTab] = useState('stats');
   
   if (!isOpen || !user) return null;
@@ -83,7 +83,17 @@ const UserProfile = ({ isOpen, onClose }) => {
               </p>
             </div>
           </div>
-          <button className="close-btn" onClick={onClose}>×</button>
+          <div className="header-actions">
+            <button 
+              className="refresh-btn" 
+              onClick={refreshUserStats}
+              title="Refresh stats"
+              aria-label="Refresh user statistics"
+            >
+              🔄
+            </button>
+            <button className="close-btn" onClick={onClose}>×</button>
+          </div>
         </div>
 
         <div className="profile-tabs">
