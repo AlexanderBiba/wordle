@@ -13,8 +13,13 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, palette.$background 0%, palette.$gray-50 100%);
+  background: linear-gradient(135deg, palette.$background-light 0%, palette.$gray-50 100%);
   min-height: 100vh;
+  transition: background animation.$transition-normal;
+  
+  &.dark-mode {
+    background: linear-gradient(135deg, palette.$background-dark 0%, palette.$dark-light 100%);
+  }
 }
 
 .app {
@@ -23,25 +28,28 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 1rem;
-  background: linear-gradient(135deg, palette.$background 0%, palette.$gray-50 100%);
+  background: linear-gradient(135deg, palette.$background-light 0%, palette.$gray-50 100%);
   position: relative;
   overflow-x: hidden;
+  transition: background animation.$transition-normal;
+  
+  &.dark-mode {
+    background: linear-gradient(135deg, palette.$background-dark 0%, palette.$dark-light 100%);
+  }
 }
 
-// Modern header with gradient and shadow
-.header {
-  background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-dark 100%);
-  color: palette.$white;
-  padding: 1.5rem 2rem;
-  margin: 0 0 2rem 0;
-  border-radius: palette.$border-radius-lg;
-  box-shadow: palette.$shadow-lg;
-  font-size: 2.5rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  text-align: center;
+// Header container with theme toggle
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   max-width: 600px;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-dark 100%);
+  border-radius: palette.$border-radius-lg;
+  box-shadow: palette.$shadow-lg;
+  padding: 1rem 1.5rem;
   position: relative;
   overflow: hidden;
   
@@ -56,6 +64,62 @@ body {
     animation: shimmer 3s ease-in-out infinite;
   }
 }
+
+// Modern header title
+.header {
+  color: palette.$white;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  text-align: left;
+  position: relative;
+  z-index: 1;
+}
+
+// Theme toggle button
+.theme-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: palette.$border-radius;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all animation.$transition-normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  height: 3rem;
+  position: relative;
+  z-index: 1;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  }
+  
+  .toggle-icon {
+    font-size: 1.25rem;
+    transition: transform animation.$transition-normal;
+    color: palette.$white;
+  }
+  
+  &:hover .toggle-icon {
+    transform: scale(1.1);
+  }
+}
+
+
 
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
@@ -78,7 +142,7 @@ body {
   transition: animation.$transition-normal;
   box-shadow: palette.$shadow;
   background: palette.$surface;
-  border: 1px solid palette.$gray-200;
+  border: 1px solid palette.$border-light;
   
   &.win {
     background: linear-gradient(135deg, palette.$success 0%, palette.$success-light 100%);
@@ -129,12 +193,22 @@ body {
 }
 
 .status {
-  color: palette.$gray-700;
+  color: palette.$text-primary-light;
   background: transparent;
   font-size: 1.1rem;
   font-weight: 500;
   padding: 0;
   border-radius: 0;
+}
+
+// Dark mode status styles
+.dark-mode .status-text {
+  background: palette.$surface-dark;
+  border-color: palette.$border-dark;
+  
+  .status {
+    color: palette.$text-primary-dark;
+  }
 }
 
 // Wordle game board with modern card design
@@ -152,9 +226,17 @@ body {
   background: palette.$surface;
   border-radius: palette.$border-radius-xl;
   box-shadow: palette.$shadow-xl;
-  border: 1px solid palette.$gray-200;
+  border: 1px solid palette.$border-light;
   min-height: 400px;
   justify-content: center;
+  transition: all animation.$transition-normal;
+}
+
+// Dark mode wordle styles
+.dark-mode .wordle {
+  background: palette.$surface-dark;
+  border-color: palette.$border-dark;
+  box-shadow: palette.$shadow-xl-dark;
 }
 
 .word {
@@ -193,6 +275,7 @@ body {
   transition: all animation.$transition-normal;
   position: relative;
   overflow: hidden;
+  cursor: default;
   
   // Letter flip animation
   &.exact, &.misplaced {
@@ -267,8 +350,150 @@ body {
     position: relative;
     z-index: 1;
   }
+}
+
+// Dark mode letter styles
+.dark-mode .letter {
+  background: palette.$surface-dark;
+  color: palette.$text-primary-dark;
+  border-color: palette.$border-dark;
   
-  cursor: default;
+  &.empty {
+    background: palette.$dark-light;
+    border-color: palette.$gray-600;
+    
+    &::after {
+      background: palette.$gray-500;
+    }
+  }
+}
+
+// Statistics Display
+.stats-wrapper {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 2rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.stats {
+  background: palette.$surface;
+  border-radius: palette.$border-radius-xl;
+  box-shadow: palette.$shadow-xl;
+  border: 1px solid palette.$border-light;
+  padding: 2rem;
+  text-align: center;
+  transition: all animation.$transition-normal;
+  
+  h3 {
+    margin: 0 0 1.5rem 0;
+    color: palette.$text-primary-light;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  
+  h4 {
+    margin: 2rem 0 1rem 0;
+    color: palette.$text-secondary-light;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+}
+
+// Dark mode stats styles
+.dark-mode .stats {
+  background: palette.$surface-dark;
+  border-color: palette.$border-dark;
+  box-shadow: palette.$shadow-xl-dark;
+  
+  h3 {
+    color: palette.$text-primary-dark;
+  }
+  
+  h4 {
+    color: palette.$text-secondary-dark;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+  
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: palette.$primary;
+    line-height: 1;
+  }
+  
+  .stat-label {
+    font-size: 0.875rem;
+    color: palette.$text-secondary-light;
+    font-weight: 500;
+    margin-top: 0.25rem;
+  }
+}
+
+// Dark mode stat item styles
+.dark-mode .stat-item .stat-label {
+  color: palette.$text-secondary-dark;
+}
+
+.guess-distribution {
+  .guess-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    gap: 0.75rem;
+    
+    .guess-number {
+      width: 1.5rem;
+      font-weight: 600;
+      color: palette.$text-secondary-light;
+    }
+    
+    .guess-bar {
+      flex: 1;
+      height: 1.5rem;
+      background: palette.$gray-200;
+      border-radius: palette.$border-radius;
+      overflow: hidden;
+      position: relative;
+      
+      .guess-fill {
+        height: 100%;
+        background: linear-gradient(135deg, palette.$success 0%, palette.$success-light 100%);
+        border-radius: palette.$border-radius;
+        transition: width animation.$transition-normal;
+        min-width: 1px;
+      }
+    }
+    
+    .guess-count {
+      width: 2rem;
+      text-align: right;
+      font-weight: 600;
+      color: palette.$text-secondary-light;
+    }
+  }
+}
+
+// Dark mode guess distribution styles
+.dark-mode .guess-distribution .guess-row {
+  .guess-number,
+  .guess-count {
+    color: palette.$text-secondary-dark;
+  }
+  
+  .guess-bar {
+    background: palette.$gray-700;
+  }
 }
 
 // Modern keyboard styling
@@ -282,9 +507,10 @@ body {
   background: palette.$surface;
   border-radius: palette.$border-radius-lg;
   box-shadow: palette.$shadow-xl;
-  border: 1px solid palette.$gray-200;
+  border: 1px solid palette.$border-light;
   padding: 1rem;
   margin: 0;
+  transition: all animation.$transition-normal;
 
   .hg-button {
     background: palette.$gray-100;
@@ -358,6 +584,23 @@ body {
   }
 }
 
+// Dark mode keyboard styles
+.dark-mode .simple-keyboard.hg-theme-default {
+  background: palette.$surface-dark;
+  border-color: palette.$border-dark;
+  box-shadow: palette.$shadow-xl-dark;
+  
+  .hg-button {
+    background: palette.$gray-800;
+    border-color: palette.$gray-700;
+    color: palette.$text-primary-dark;
+    
+    &:hover {
+      background: palette.$gray-700;
+    }
+  }
+}
+
 @keyframes pulse {
   0%, 100% {
     box-shadow: palette.$shadow-md, 0 0 20px rgba(palette.$primary, 0.3);
@@ -367,111 +610,29 @@ body {
   }
 }
 
-// Statistics Display
-.stats-wrapper {
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 2rem;
-  animation: fadeIn 0.5s ease-out;
-}
-
-.stats {
-  background: palette.$surface;
-  border-radius: palette.$border-radius-xl;
-  box-shadow: palette.$shadow-xl;
-  border: 1px solid palette.$gray-200;
-  padding: 2rem;
-  text-align: center;
-  
-  h3 {
-    margin: 0 0 1.5rem 0;
-    color: palette.$gray-900;
-    font-size: 1.5rem;
-    font-weight: 700;
-  }
-  
-  h4 {
-    margin: 2rem 0 1rem 0;
-    color: palette.$gray-800;
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.stat-item {
-  text-align: center;
-  
-  .stat-number {
-    font-size: 2rem;
-    font-weight: 800;
-    color: palette.$primary;
-    line-height: 1;
-  }
-  
-  .stat-label {
-    font-size: 0.875rem;
-    color: palette.$gray-600;
-    font-weight: 500;
-    margin-top: 0.25rem;
-  }
-}
-
-.guess-distribution {
-  .guess-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.5rem;
-    gap: 0.75rem;
-    
-    .guess-number {
-      width: 1.5rem;
-      font-weight: 600;
-      color: palette.$gray-700;
-    }
-    
-    .guess-bar {
-      flex: 1;
-      height: 1.5rem;
-      background: palette.$gray-200;
-      border-radius: palette.$border-radius;
-      overflow: hidden;
-      position: relative;
-      
-      .guess-fill {
-        height: 100%;
-        background: linear-gradient(135deg, palette.$success 0%, palette.$success-light 100%);
-        border-radius: palette.$border-radius;
-        transition: width animation.$transition-normal;
-        min-width: 1px;
-      }
-    }
-    
-    .guess-count {
-      width: 2rem;
-      text-align: right;
-      font-weight: 600;
-      color: palette.$gray-700;
-    }
-  }
-}
-
 // Responsive design
 @media (max-width: 768px) {
   .app {
     padding: 0.5rem;
   }
   
-  .header {
-    font-size: 2rem;
-    padding: 1rem 1.5rem;
+  .header-container {
+    padding: 0.75rem 1rem;
     margin-bottom: 1.5rem;
+  }
+  
+  .header {
+    font-size: 1.75rem;
+  }
+  
+  .theme-toggle {
+    min-width: 2.75rem;
+    height: 2.75rem;
+    padding: 0.5rem;
+    
+    .toggle-icon {
+      font-size: 1rem;
+    }
   }
   
   .wordle {
@@ -529,9 +690,22 @@ body {
     height: 3rem;
   }
   
+  .header-container {
+    padding: 0.5rem 0.75rem;
+  }
+  
   .header {
-    font-size: 1.75rem;
-    padding: 0.75rem 1rem;
+    font-size: 1.5rem;
+  }
+  
+  .theme-toggle {
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding: 0.4rem;
+    
+    .toggle-icon {
+      font-size: 0.875rem;
+    }
   }
   
   .stats {

@@ -1,10 +1,11 @@
 # 🧩 Wordle
 
-A beautiful, modern Wordle game built with React and Firebase. Features a clean, responsive design with smooth animations and comprehensive statistics tracking.
+A beautiful, modern Wordle game built with React and Firebase. Features a clean, responsive design with smooth animations, comprehensive statistics tracking, and a beautiful dark mode toggle.
 
 ## ✨ Features
 
 - **Modern UI/UX**: Clean, beautiful design with smooth animations and transitions
+- **🌙 Dark Mode Toggle**: Beautiful theme switcher with persistent preference
 - **Responsive Design**: Optimized for all devices (desktop, tablet, mobile)
 - **Statistics Tracking**: 
   - Games played and win percentage
@@ -13,11 +14,12 @@ A beautiful, modern Wordle game built with React and Firebase. Features a clean,
 - **Smooth Animations**: Letter flip animations, ripple effects, and smooth transitions
 - **Keyboard Integration**: Virtual keyboard with visual feedback
 - **Daily Challenges**: New word every day with persistent game state
-- **Local Storage**: Game progress and statistics saved locally
+- **Local Storage**: Game progress, statistics, and theme preference saved locally
 
 ## 🎨 Design Features
 
-- **Modern Color Palette**: Beautiful gradients and shadows
+- **Modern Color Palette**: Beautiful gradients and shadows for both light and dark themes
+- **Theme System**: Comprehensive light/dark mode with smooth transitions
 - **Smooth Transitions**: CSS animations and micro-interactions
 - **Card-based Layout**: Clean, organized interface
 - **Typography**: Modern font stack with proper hierarchy
@@ -33,10 +35,19 @@ A beautiful, modern Wordle game built with React and Firebase. Features a clean,
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18, SCSS
-- **Styling**: Modern CSS with custom design system
+- **Styling**: Modern CSS with custom design system and theme support
 - **Animations**: CSS animations and transitions
 - **Backend**: Firebase Cloud Functions
 - **Deployment**: GitHub Pages
+
+## 🌙 Dark Mode
+
+The app features a beautiful dark mode toggle:
+- **Toggle Button**: Located in the header next to the title
+- **Persistent Preference**: Your theme choice is saved locally
+- **Smooth Transitions**: Beautiful animations when switching themes
+- **Comprehensive Coverage**: All components support both themes
+- **Accessibility**: Proper contrast ratios for both themes
 
 ## 📱 Responsive Design
 
@@ -56,9 +67,9 @@ The app is fully responsive and optimized for:
 ## 🔧 Customization
 
 The design system is built with SCSS variables for easy customization:
-- Color palette in `src/_palette.scss`
-- Animation settings in `src/_animation.scss`
-- Component styles in `src/App.scss`
+- **Color Palette**: `src/_palette.scss` - Light and dark theme colors
+- **Animation Settings**: `src/_animation.scss` - Transition timings and keyframes
+- **Component Styles**: `src/App.scss` - Main component styling with theme support
 
 ## 📊 Statistics
 
@@ -71,8 +82,8 @@ Track your Wordle performance with:
 
 ## 🌟 Future Enhancements
 
-- Dark mode toggle
 - Share results functionality
 - Practice mode
 - Word hints
 - Accessibility improvements
+- Additional theme options

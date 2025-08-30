@@ -31,6 +31,7 @@ export default function App() {
     localStorage.setItem("date", today);
   }
   const [loading, setLoading] = useState(false);
+  const [darkMode, setDarkMode] = useLocalStorage("darkMode", false);
   const [stats, setStats] = useLocalStorage("wordleStats", {
     gamesPlayed: 0,
     gamesWon: 0,
@@ -49,6 +50,15 @@ export default function App() {
     absentLetters: {},
     foundLetters: {},
   });
+
+  // Apply dark mode to document body
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', darkMode);
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
 
   const getStatusMessage = () => {
     if (loading) return "Checking word...";
@@ -192,10 +202,21 @@ export default function App() {
   const winPercentage = stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
 
   return (
-    <div className="app">
-      <h1 className="header">
-        <span role="img" aria-label="puzzle">🧩</span> Wordle
-      </h1>
+    <div className={`app ${darkMode ? 'dark-mode' : ''}`}>
+      <div className="header-container">
+        <h1 className="header">
+          <span role="img" aria-label="puzzle">🧩</span> Wordle
+        </h1>
+        <button 
+          className={`theme-toggle ${darkMode ? 'dark' : 'light'}`}
+          onClick={toggleDarkMode}
+          aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+        >
+          <span className="toggle-icon">
+            {darkMode ? '☀️' : '🌙'}
+          </span>
+        </button>
+      </div>
       
       <div className="status-wrapper">
         <div className={`status-text ${getStatusClass()}`}>
