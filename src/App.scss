@@ -350,8 +350,8 @@ body {
   border-radius: palette.$border-radius-xl;
   box-shadow: palette.$shadow-xl;
   border: 1px solid palette.$border-light;
-  min-height: 400px;
-  justify-content: center;
+  min-height: 500px;
+  justify-content: flex-start;
   transition: all animation.$transition-normal;
 }
 
@@ -360,6 +360,10 @@ body {
   background: palette.$surface-dark;
   border-color: palette.$border-dark;
   box-shadow: palette.$shadow-xl-dark;
+  
+  .keyboard-wrapper {
+    border-top-color: palette.$border-dark;
+  }
 }
 
 .word {
@@ -619,19 +623,26 @@ body {
   }
 }
 
-// Modern keyboard styling
+// Modern keyboard styling - now integrated into wordle card
 .keyboard-wrapper {
   width: 100%;
-  max-width: 600px;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid palette.$border-light;
+  
+  // Ensure keyboard fits nicely within the card
+  .simple-keyboard.hg-theme-default {
+    max-width: 100%;
+    margin: 0 auto;
+  }
 }
 
 .simple-keyboard.hg-theme-default {
-  background: palette.$surface;
-  border-radius: palette.$border-radius-lg;
-  box-shadow: palette.$shadow-xl;
-  border: 1px solid palette.$border-light;
-  padding: 1rem;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+  padding: 0;
   margin: 0;
   transition: all animation.$transition-normal;
 
@@ -709,9 +720,9 @@ body {
 
 // Dark mode keyboard styles
 .dark-mode .simple-keyboard.hg-theme-default {
-  background: palette.$surface-dark;
-  border-color: palette.$border-dark;
-  box-shadow: palette.$shadow-xl-dark;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
   
   .hg-button {
     background: palette.$gray-800;
@@ -770,6 +781,12 @@ body {
   .wordle {
     padding: 1.5rem;
     gap: 0.5rem;
+    min-height: 350px;
+  }
+  
+  .keyboard-wrapper {
+    margin-top: 1rem;
+    padding-top: 1rem;
   }
   
   .letter {
@@ -784,7 +801,7 @@ body {
   }
   
   .simple-keyboard.hg-theme-default {
-    padding: 0.75rem;
+    padding: 0;
     
     .hg-button {
       height: 2.5rem;
