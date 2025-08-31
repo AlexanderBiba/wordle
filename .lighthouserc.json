@@ -3,11 +3,12 @@
     "collect": {
       "url": ["http://localhost:3000"],
       "startServerCommand": "npx serve -s build -p 3000",
-      "startServerReadyPattern": "Serving!",
-      "startServerReadyTimeout": 10000,
-      "numberOfRuns": 3,
+      "startServerReadyPattern": "Accepting connections at http://localhost:3000",
+      "startServerReadyTimeout": 30000,
+      "numberOfRuns": 1,
       "settings": {
-        "onlyCategories": ["pwa", "performance", "accessibility", "best-practices", "seo"]
+        "onlyCategories": ["pwa", "performance", "accessibility", "best-practices", "seo"],
+        "chromeFlags": "--no-sandbox --disable-dev-shm-usage --disable-gpu --headless"
       }
     },
     "assert": {

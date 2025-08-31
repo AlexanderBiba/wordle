@@ -34,6 +34,9 @@
 		"build:gh-pages": "PUBLIC_URL=/wordle/ react-scripts build",
 		"test-pwa": "npm run build:local && npx serve -s build -p 3000",
 		"test-pwa-gh-pages": "npm run build:gh-pages && npx serve -s build -p 3000",
+		"test-pwa-lighthouse": "npm run build:local && npx serve -s build -p 3000 & sleep 5 && lhci autorun --config=./.lighthouserc.json && kill %1",
+		"test-pwa-ci": "npm run build:local && ./scripts/test-pwa-ci.sh",
+		"verify-pwa": "node scripts/verify-pwa-build.js",
 		"lighthouse": "npm run build:local && npx serve -s build -p 3000 && npx lighthouse http://localhost:3000 --output=html --output-path=./lighthouse-report.html",
 		"deploy": "gh-pages -d build"
 	},

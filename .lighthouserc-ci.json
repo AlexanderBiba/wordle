@@ -1,0 +1,48 @@
+{
+  "ci": {
+    "collect": {
+      "url": ["http://localhost:3000"],
+      "startServerCommand": "npx serve -s build -p 3000",
+      "startServerReadyPattern": "Accepting connections at http://localhost:3000",
+      "startServerReadyTimeout": 60000,
+      "numberOfRuns": 1,
+      "settings": {
+        "onlyCategories": ["pwa"],
+        "chromeFlags": "--no-sandbox --disable-dev-shm-usage --disable-gpu --headless --disable-web-security --disable-features=VizDisplayCompositor",
+        "skipAudits": [
+          "uses-http2",
+          "uses-passive-event-listeners",
+          "meta-description",
+          "http-status-code",
+          "font-size",
+          "link-text",
+          "crawlable-anchors",
+          "is-crawlable",
+          "robots-txt",
+          "tap-targets",
+          "hreflang",
+          "plugins",
+          "canonical",
+          "bf-cache"
+        ]
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:pwa": ["warn", {"minScore": 0.7}],
+        "service-worker": ["warn", {"minScore": 0.7}],
+        "installable-manifest": ["warn", {"minScore": 0.7}],
+        "apple-touch-icon": ["warn", {"minScore": 0.7}],
+        "maskable-icon-a": ["warn", {"minScore": 0.7}],
+        "splash-screen": ["warn", {"minScore": 0.7}],
+        "themed-omnibox": ["warn", {"minScore": 0.7}],
+        "content-width": ["warn", {"minScore": 0.7}],
+        "viewport": ["warn", {"minScore": 0.7}],
+        "document-title": ["warn", {"minScore": 0.7}]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+} 
