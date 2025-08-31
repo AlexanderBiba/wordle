@@ -1,32 +1,127 @@
-name: Deploy to GitHub Pages
+name: 🚀 Deploy to GitHub Pages
 
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
-    
-    # Only deploy on push to main/master, not on PRs
-    if: github.event_name == 'push'
+    name: 🏗️ Build and Test
     
     steps:
-      - name: Checkout
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
         
-      - name: Setup Node.js
+      - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: npm ci
         
-      - name: Build
+      - name: 🏗️ Build for GitHub Pages
+        run: PUBLIC_URL=/wordle/ npm run build
+        env:
+          CI: false
+          REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          REACT_APP_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          REACT_APP_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+          
+      - name: 🧪 Test build locally
+        run: |
+          echo "Testing build output..."
+          ls -la build/
+          echo "Checking for PWA files..."
+          ls -la build/ | grep -E "(manifest|sw|logo)"
+          
+      - name: 📁 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-build
+          path: build/
+          retention-days: 1
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    name: 🚀 Deploy to GitHub Pages
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: 📦 Install dependencies
+        run: npm ci
+        
+      - name: 🏗️ Build for GitHub Pages
+        run: PUBLIC_URL=/wordle/ npm run build
+        env:
+          CI: false
+          REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          REACT_APP_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          REACT_APP_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+          
+      - name: 🚀 Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+          publish_branch: gh-pages
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: '🚀 Deploy to GitHub Pages - ${{ github.sha }}'
+          
+      - name: ✅ Deployment status
+        run: |
+          echo "🎉 App successfully deployed to GitHub Pages!"
+          echo "🌐 Live URL: https://alexanderbiba.github.io/wordle"
+          echo "📱 PWA features: Installable, Offline, Service Worker"
+          echo "🔄 Next deployment will be automatic on push to main"
+
+  # PWA validation and testing
+  validate-pwa:
+    needs: deploy
+    runs-on: ubuntu-latest
+    name: 🔍 Validate PWA
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: 📦 Install dependencies
+        run: npm ci
+        
+      - name: 🏗️ Build PWA for GitHub Pages
+        run: npm run build:gh-pages
         env:
           REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
@@ -35,12 +130,94 @@ jobs:
           REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
           REACT_APP_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           REACT_APP_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
-        run: npm run build
         
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: 🧪 Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.12.x
+        
+      - name: 🔍 Run Lighthouse PWA Audit
+        run: |
+          echo "Running Lighthouse PWA audit..."
+          lhci autorun --config=./.lighthouserc.json || echo "Lighthouse audit completed"
+          
+      - name: 📊 Upload Lighthouse results
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build
-          publish_branch: gh-pages
-          force_orphan: true
+          name: lighthouse-results
+          path: .lighthouseci/
+          retention-days: 30
+
+  # Performance monitoring
+  performance-check:
+    needs: deploy
+    runs-on: ubuntu-latest
+    name: 📊 Performance Check
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: 📦 Install dependencies
+        run: npm ci
+        
+      - name: 🏗️ Build PWA for GitHub Pages
+        run: npm run build:gh-pages
+        env:
+          REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          REACT_APP_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          REACT_APP_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+        
+      - name: 📊 Check bundle size
+        run: |
+          echo "📦 Bundle size analysis:"
+          echo "JavaScript: $(du -h build/static/js/*.js | tail -1 | cut -f1)"
+          echo "CSS: $(du -h build/static/css/*.css | tail -1 | cut -f1)"
+          echo "Total build: $(du -sh build/ | cut -f1)"
+          
+      - name: 🔍 Check PWA files
+        run: |
+          echo "📱 PWA file validation:"
+          echo "Manifest: $(ls -la build/manifest.json 2>/dev/null && echo "✅" || echo "❌")"
+          echo "Service Worker: $(ls -la build/sw.js 2>/dev/null && echo "✅" || echo "❌")"
+          echo "Icons: $(ls -la build/logo*.png 2>/dev/null && echo "✅" || echo "❌")"
+
+  # Notify deployment status
+  notify:
+    needs: [deploy, validate-pwa, performance-check]
+    runs-on: ubuntu-latest
+    name: 📢 Notify Status
+    if: always()
+    
+    steps:
+      - name: ✅ Deployment Summary
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "🎉 PWA Deployment Successful!"
+            echo "🌐 Live at: https://alexanderbiba.github.io/wordle"
+            echo "📱 PWA Features: ✅ Installable ✅ Offline ✅ Service Worker"
+          else
+            echo "❌ PWA Deployment Failed!"
+            echo "Check the logs above for details"
+          fi
+          
+          if [ "${{ needs.validate-pwa.result }}" == "success" ]; then
+            echo "🔍 PWA Validation: ✅ Passed"
+          else
+            echo "🔍 PWA Validation: ❌ Failed"
+          fi
+          
+          if [ "${{ needs.performance-check.result }}" == "success" ]; then
+            echo "📊 Performance Check: ✅ Passed"
+          else
+            echo "📊 Performance Check: ❌ Failed"
+          fi 

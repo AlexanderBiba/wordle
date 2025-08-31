@@ -1,6 +1,5 @@
 import "./App.scss";
-import Keyboard from "react-simple-keyboard";
-import "react-simple-keyboard/build/css/index.css";
+import CustomKeyboard from "./components/CustomKeyboard";
 import { useState, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { useGameState } from "./hooks/useGameState";
@@ -9,9 +8,10 @@ import { useGameStats } from "./hooks/useGameStats";
 import { useStatus } from "./hooks/useStatus";
 import { useKeyboardTheme } from "./hooks/useKeyboardTheme";
 import { useWordRendering } from "./hooks/useWordRendering";
+import { usePWA } from "./hooks/usePWA";
 import UserProfile from "./components/UserProfile";
 import Leaderboard from "./components/Leaderboard";
-import { KEYBOARD_LAYOUT, KEYBOARD_DISPLAY } from "./constants";
+
 import { calculateWinPercentage, getFallbackAvatar } from "./utils";
 
 export default function App() {
@@ -21,7 +21,17 @@ export default function App() {
   
   const { user, userStats, signInWithGoogle, updateUserStats, loading: authLoading } = useAuth();
   
-  // Use Firebase-based game state management
+  const {
+    isOnline,
+    isInstalled,
+    hasUpdate,
+    showInstallBanner,
+    registerServiceWorker,
+    installPWA,
+    skipWaiting,
+    dismissInstallBanner
+  } = usePWA();
+  
   const {
     state,
     stats,
@@ -33,10 +43,8 @@ export default function App() {
     saveGameStateToFirebase
   } = useGameState(user);
 
-  // Use game stats hook
   const { handleGameEnd } = useGameStats(stats, updateStats, user, userStats, updateUserStats);
 
-  // Use custom keyboard hook
   const { onKeyDown } = useKeyboard(
     state, 
     gameLoading, 
@@ -45,19 +53,12 @@ export default function App() {
     handleGameEnd
   );
 
-  // Use status hook
   const { statusMessage, statusClass } = useStatus(state, gameLoading);
-
-  // Use keyboard theme hook
   const { buttonTheme } = useKeyboardTheme(state);
-
-  // Use word rendering hook
   const { renderedWords } = useWordRendering(state);
 
-  // Combined loading state for app initialization
   const isAppLoading = authLoading || gameLoading || minLoadingTime;
 
-  // Minimum loading time to prevent flickering
   useEffect(() => {
     const timer = setTimeout(() => {
       setMinLoadingTime(false);
@@ -66,7 +67,10 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Apply dark mode to document body
+  useEffect(() => {
+    registerServiceWorker();
+  }, [registerServiceWorker]);
+
   useEffect(() => {
     document.body.classList.toggle('dark-mode', darkMode);
   }, [darkMode]);
@@ -94,7 +98,7 @@ export default function App() {
           <div className="loading-content">
             <div className="loading-logo">
               <span role="img" aria-label="puzzle">🧩</span>
-              <h1>Wordle</h1>
+              <h2>Wordle</h2>
             </div>
             <div className="loading-spinner"></div>
             <p className="loading-text">Loading your game...</p>
@@ -106,9 +110,49 @@ export default function App() {
 
   return (
     <div className={`app ${darkMode ? 'dark-mode' : ''}`}>
+      {/* PWA Update Notification */}
+      {hasUpdate && (
+        <div className="pwa-update-banner">
+          <div className="update-content">
+            <span>🔄 New version available!</span>
+            <button onClick={skipWaiting} className="update-btn">
+              Update Now
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Offline Status Banner */}
+      {!isOnline && (
+        <div className="offline-banner">
+          <span>📡 You're offline - playing in offline mode</span>
+        </div>
+      )}
+
+      {/* PWA Install Prompt */}
+      {showInstallBanner && (
+        <div className="pwa-install-banner">
+          <div className="install-content">
+            <span>📱 Install Wordle for the best experience!</span>
+            <div className="install-actions">
+              <button onClick={installPWA} className="install-btn">Install</button>
+              <button 
+                onClick={dismissInstallBanner} 
+                className="dismiss-btn"
+                aria-label="Close install banner"
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="header-container">
         <h1 className="header">
           <span role="img" aria-label="puzzle">🧩</span> Wordle
+          {isInstalled && <span className="pwa-badge" title="Installed as PWA">📱</span>}
         </h1>
         <div className="header-actions">
           <button 
@@ -149,17 +193,16 @@ export default function App() {
         </div>
       </div>
       
-      {!user && (
-        <div className="login-prompt">
-          <div className="login-content">
-            <h3>🎯 Sign in to track your progress!</h3>
-            <p>Save your stats, earn achievements, and compete with friends</p>
-            <button className="login-btn" onClick={handleSignIn}>
-              <span role="img" aria-label="google">🔍</span> Sign in with Google
-            </button>
-          </div>
+      {/* Always render login prompt to avoid LCP delays */}
+      <div className="login-prompt" style={{ display: user ? 'none' : 'block' }}>
+        <div className="login-content">
+          <h3>🎯 Sign in to track your progress!</h3>
+          <p>Save your stats, earn achievements, and compete with friends</p>
+          <button className="login-btn" onClick={handleSignIn}>
+            <span role="img" aria-label="google">🔍</span> Sign in with Google
+          </button>
         </div>
-      )}
+      </div>
       
       <div className="status-wrapper">
         <div className={`status-text ${statusClass}`}>
@@ -182,25 +225,11 @@ export default function App() {
             </div>
           ))}
           
-          {/* Keyboard integrated within the wordle card */}
+          {/* Custom Keyboard integrated within the wordle card */}
           <div className="keyboard-wrapper">
-            <Keyboard
-              onKeyPress={(key) =>
-                onKeyDown({
-                  key:
-                    key === "{backspace}"
-                      ? "Backspace"
-                      : key === "{enter}"
-                      ? "Enter"
-                      : key,
-                })
-              }
-              layout={{
-                default: KEYBOARD_LAYOUT.default.map(row => row.join(" "))
-              }}
-              display={KEYBOARD_DISPLAY}
+            <CustomKeyboard
+              onKeyPress={(key) => onKeyDown({ key })}
               buttonTheme={buttonTheme}
-              physicalKeyboardHighlight={true}
             />
           </div>
         </div>
