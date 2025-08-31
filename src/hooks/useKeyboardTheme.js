@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { WORD_LENGTH } from '../constants';
 
 export const useKeyboardTheme = (state) => {
   const buttonTheme = useMemo(() => {
@@ -23,17 +24,11 @@ export const useKeyboardTheme = (state) => {
     });
     
     // Special keys
-    theme['Enter'] = 'default';
+    theme['Submit'] = (state.currLetter === WORD_LENGTH && state.currWord !== null) ? 'current' : 'default';
     theme['⌫'] = state.invalidWord ? 'emphasis' : 'default';
     
-    console.log('Keyboard theme generated:', {
-      foundLetters: Object.keys(state.foundLetters),
-      absentLetters: Object.keys(state.absentLetters),
-      theme: theme
-    });
-    
     return theme;
-  }, [state.absentLetters, state.foundLetters, state.invalidWord]);
+  }, [state.absentLetters, state.foundLetters, state.invalidWord, state.currLetter, state.currWord]);
 
   return { buttonTheme };
 }; 

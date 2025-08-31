@@ -25,7 +25,6 @@ if (
   console.error(
     "Firebase configuration is incomplete. Please check your environment variables."
   );
-  console.log("Current config:", firebaseConfig);
 }
 
 // Initialize Firebase

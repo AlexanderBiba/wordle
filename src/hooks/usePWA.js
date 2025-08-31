@@ -51,26 +51,23 @@ export const usePWA = () => {
 
     window.addEventListener('appinstalled', handleAppInstalled);
     
-    // Only set up install prompt if not already installed
-    if (!isAlreadyInstalled) {
-      const handleBeforeInstallPrompt = (e) => {
-        e.preventDefault();
-        setDeferredPrompt(e);
-        // Only show banner if we have a deferred prompt, app is not installed, and user hasn't dismissed it
-        if (!isInstalled && !localStorage.getItem('pwa-install-dismissed')) {
-          setShowInstallBanner(true);
-        }
-      };
+    // Set up install prompt listener
+    const handleBeforeInstallPrompt = (e) => {
+      // Store the event for later use
+      setDeferredPrompt(e);
+      // Only show banner if we have a deferred prompt, app is not installed, and user hasn't dismissed it
+      if (!isAlreadyInstalled && !localStorage.getItem('pwa-install-dismissed')) {
+        setShowInstallBanner(true);
+      }
+    };
 
-      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      return () => {
-        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        window.removeEventListener('appinstalled', handleAppInstalled);
-      };
-    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     
-    return () => window.removeEventListener('appinstalled', handleAppInstalled);
-  }, [isInstalled]);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -90,7 +87,6 @@ export const usePWA = () => {
   const registerServiceWorker = useCallback(async () => {
     // Skip service worker registration in development mode
     if (isDevelopment) {
-      console.log('PWA: Skipping service worker registration in development mode');
       return null;
     }
     
@@ -129,7 +125,6 @@ export const usePWA = () => {
   // Install PWA
   const installPWA = useCallback(async () => {
     if (isDevelopment) {
-      console.log('PWA: Install functionality disabled in development mode');
       return;
     }
     

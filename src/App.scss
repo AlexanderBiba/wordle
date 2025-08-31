@@ -312,11 +312,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   
-  .pwa-badge {
-    font-size: 1rem;
-    opacity: 0.8;
-    animation: pulse 2s infinite;
-  }
+
 }
 
 // Common button styles
@@ -332,6 +328,10 @@ body {
   justify-content: center;
   width: 3rem;
   height: 3rem;
+  min-width: 3rem;
+  min-height: 3rem;
+  max-width: 3rem;
+  max-height: 3rem;
   position: relative;
   z-index: 1;
   overflow: hidden;
@@ -359,6 +359,10 @@ body {
   .leaderboard-icon {
     font-size: 1.25rem;
     color: palette.$white;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -376,44 +380,16 @@ body {
 
 // Theme toggle button
 .theme-toggle {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: palette.$border-radius;
-  padding: 0.75rem;
-  cursor: pointer;
-  transition: all animation.$transition-normal;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 3rem;
-  height: 3rem;
-}
-
-// PWA test button (development only)
-.pwa-test-btn {
-  @extend %button-base;
-  background: rgba(255, 193, 7, 0.2);
-  border-color: rgba(255, 193, 7, 0.4);
-  
-  .test-icon {
-    font-size: 1.25rem;
-    color: palette.$white;
-  }
-  
-  &:hover {
-    background: rgba(255, 193, 7, 0.3);
-    border-color: rgba(255, 193, 7, 0.6);
-  }
-}
-
-// Theme toggle button
-.theme-toggle {
   @extend %button-base;
   
   .toggle-icon {
     font-size: 1.25rem;
     transition: transform animation.$transition-normal;
     color: palette.$white;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   &:hover .toggle-icon {
@@ -454,11 +430,50 @@ body {
   padding: 2rem;
   text-align: center;
   transition: all animation.$transition-normal;
+  position: relative;
   
   .dark-mode & {
     background: palette.$surface-dark;
     border-color: palette.$border-dark;
     box-shadow: palette.$shadow-xl-dark;
+  }
+  
+  .dismiss-login-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: palette.$text-secondary-light;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all animation.$transition-normal;
+    
+    .dark-mode & {
+      color: palette.$text-secondary-dark;
+    }
+    
+    &:hover {
+      background: palette.$gray-100;
+      color: palette.$text-primary-light;
+      
+      .dark-mode & {
+        background: palette.$dark-light;
+        color: palette.$text-primary-dark;
+      }
+    }
+    
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(palette.$primary, 0.3);
+    }
   }
   
   h3 {
@@ -574,6 +589,36 @@ body {
     .status {
       background: transparent;
       color: palette.$white;
+    }
+  }
+  
+  .status-signin-btn {
+    background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-light 100%);
+    color: palette.$white;
+    border: none;
+    border-radius: palette.$border-radius-lg;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all animation.$transition-normal;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: palette.$shadow-lg;
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+    
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(palette.$primary, 0.3);
     }
   }
 }
@@ -1103,12 +1148,32 @@ body {
   .profile-btn {
     width: 2.75rem;
     height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    max-width: 2.75rem;
+    max-height: 2.75rem;
+  }
+  
+  .leaderboard-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    max-width: 2.75rem;
+    max-height: 2.75rem;
+    
+    .leaderboard-icon {
+      font-size: 1rem;
+    }
   }
   
   .theme-toggle {
-    min-width: 2.75rem;
+    width: 2.75rem;
     height: 2.75rem;
-    padding: 0.5rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    max-width: 2.75rem;
+    max-height: 2.75rem;
     
     .toggle-icon {
       font-size: 1rem;

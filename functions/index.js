@@ -17,6 +17,9 @@ const GUESS_RESULT = {
   correct: 2, // Letter is in the word and in the correct position
 };
 
+// Static word for anonymous users to prevent cheating
+const ANONYMOUS_WORD = "GUEST";
+
 // --- Configuration ---
 
 const corsHandler = cors({
@@ -67,121 +70,175 @@ const getDateStr = (date = new Date()) =>
 // --- Cloud Function Entry Point ---
 // The name 'router' here must match the entry point configured in Cloud Run.
 // This function handles multiple API endpoints:
-// - GET /router?word=HELLO -> Word validation
+// - GET /router?word=HELLO -> Word validation (default action)
 // - GET /router?action=getLeaderboard&metric=winRate -> Leaderboard data
 functions.http('router', (req, res) => {
   // Use the cors handler to manage CORS headers
   corsHandler(req, res, async () => {
-    // Route: Leaderboard API
-    if (req.method === 'GET' && req.query.action === 'getLeaderboard') {
-      try {
-        const { metric = 'winRate' } = req.query;
-        
-        // Get all users with their stats
-        // Note: Display names are formatted for privacy (first name + last initial only)
-        const usersSnapshot = await db.collection('users').get();
-        const users = [];
-        
-        usersSnapshot.forEach(doc => {
-          const userData = doc.data();
-          if (userData.stats && userData.stats.gamesPlayed > 0) {
-            // Calculate win rate
-            const winRate = Math.round((userData.stats.gamesWon / userData.stats.gamesPlayed) * 100);
-            
-            // Handle migration for totalGuesses field
-            let totalGuesses = userData.stats.totalGuesses || 0;
-            if (totalGuesses === 0 && userData.stats.gamesPlayed > 0) {
-              // Estimate totalGuesses based on games played (assume average of 4 guesses per game)
-              totalGuesses = userData.stats.gamesPlayed * 4;
-              console.log(`Migrating totalGuesses for user ${userData.displayName}: estimated ${totalGuesses} based on ${userData.stats.gamesPlayed} games`);
-            }
-            
-            // Format display name for privacy (first name + last initial)
-            const formatDisplayName = (fullName) => {
-              if (!fullName) return 'Anonymous';
-              
-              const nameParts = fullName.trim().split(' ');
-              if (nameParts.length === 1) return fullName;
-              
-              const firstName = nameParts[0];
-              const lastName = nameParts[nameParts.length - 1];
-              const lastNameInitial = lastName.charAt(0).toUpperCase();
-              
-              return `${firstName} ${lastNameInitial}.`;
-            };
-            
-            users.push({
-              uid: doc.id,
-              displayName: formatDisplayName(userData.displayName),
-              photoURL: userData.photoURL || null,
-              stats: {
-                ...userData.stats,
-                winRate: winRate,
-                totalGuesses: totalGuesses,
-                averageGuesses: userData.stats.gamesPlayed > 0 
-                  ? parseFloat(((totalGuesses / userData.stats.gamesPlayed)).toFixed(1))
-                  : 0
-              }
-            });
-          }
-        });
-        
-        // Sort users based on the requested metric
-        let sortedUsers = [];
-        switch (metric) {
-          case 'winRate':
-            sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
-            break;
-          case 'maxStreak':
-            sortedUsers = users.sort((a, b) => b.stats.maxStreak - a.stats.maxStreak);
-            break;
-          case 'currentStreak':
-            sortedUsers = users.sort((a, b) => b.stats.currentStreak - a.stats.currentStreak);
-            break;
-          case 'gamesPlayed':
-            sortedUsers = users.sort((a, b) => b.stats.gamesPlayed - a.stats.gamesPlayed);
-            break;
-          case 'averageGuesses':
-            sortedUsers = users.sort((a, b) => (a.stats.averageGuesses || 0) - (b.stats.averageGuesses || 0));
-            break;
-          default:
-            sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
-        }
-        
-        // Return top users based on limit
-        const leaderboard = sortedUsers.slice(0, LEADERBOARD_LIMIT);
-        
-        res.status(200).send({
-          leaderboard: leaderboard,
-          metric: metric,
-          totalUsers: users.length
-        });
-        
-      } catch (error) {
-        console.error('Error fetching leaderboard:', error);
-        res.status(500).send({
-          error: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to fetch leaderboard data.',
-        });
+    try {
+      // Determine the action from query parameters
+      const action = req.query.action || 'checkWord';
+      
+      // Route based on action using switch statement
+      switch (action) {
+        case 'getLeaderboard':
+          await handleGetLeaderboard(req, res);
+          break;
+          
+        case 'checkWord':
+        default:
+          await handleCheckWord(req, res);
+          break;
       }
-      return;
-    }
-
-    // Route: Word Validation API
-    // 1. Validate the incoming request
-    const requestWord = req.query.word;
-    if (!requestWord || typeof requestWord !== 'string' || requestWord.length !== 5) {
-      return res.status(400).send({
-        error: 'INVALID_REQUEST',
-        message: 'A 5-letter word must be provided as a query parameter.',
+    } catch (error) {
+      console.error('Unhandled error in router:', error);
+      res.status(500).send({
+        error: 'INTERNAL_SERVER_ERROR',
+        message: 'An unexpected error occurred.',
       });
     }
+  });
+});
 
-    const lowerCaseWord = requestWord.toLowerCase();
-    const today = getDateStr();
+// --- Action Handlers ---
 
-    try {
-      // 2. Ensure today's word exists in Firestore, creating it if necessary.
+/**
+ * Handles the getLeaderboard action
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+async function handleGetLeaderboard(req, res) {
+  try {
+    const { metric = 'winRate' } = req.query;
+    
+    // Get all users with their stats
+    // Note: Display names are formatted for privacy (first name + last initial only)
+    const usersSnapshot = await db.collection('users').get();
+    const users = [];
+    
+    usersSnapshot.forEach(doc => {
+      const userData = doc.data();
+      if (userData.stats && userData.stats.gamesPlayed > 0) {
+        // Calculate win rate
+        const winRate = Math.round((userData.stats.gamesWon / userData.stats.gamesPlayed) * 100);
+        
+        // Handle migration for totalGuesses field
+        let totalGuesses = userData.stats.totalGuesses || 0;
+        if (totalGuesses === 0 && userData.stats.gamesPlayed > 0) {
+          // Estimate totalGuesses based on games played (assume average of 4 guesses per game)
+          totalGuesses = userData.stats.gamesPlayed * 4;
+          console.log(`Migrating totalGuesses for user ${userData.displayName}: estimated ${totalGuesses} based on ${userData.stats.gamesPlayed} games`);
+        }
+        
+        // Format display name for privacy (first name + last initial)
+        const formatDisplayName = (fullName) => {
+          if (!fullName) return 'Anonymous';
+          
+          const nameParts = fullName.trim().split(' ');
+          if (nameParts.length === 1) return fullName;
+          
+          const firstName = nameParts[0];
+          const lastName = nameParts[nameParts.length - 1];
+          const lastNameInitial = lastName.charAt(0).toUpperCase();
+          
+          return `${firstName} ${lastNameInitial}.`;
+        };
+        
+        users.push({
+          uid: doc.id,
+          displayName: formatDisplayName(userData.displayName),
+          photoURL: userData.photoURL || null,
+          stats: {
+            ...userData.stats,
+            winRate: winRate,
+            totalGuesses: totalGuesses,
+            averageGuesses: userData.stats.gamesPlayed > 0 
+              ? parseFloat(((totalGuesses / userData.stats.gamesPlayed)).toFixed(1))
+              : 0
+          }
+        });
+      }
+    });
+    
+    // Sort users based on the requested metric
+    let sortedUsers = [];
+    switch (metric) {
+      case 'winRate':
+        sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
+        break;
+      case 'maxStreak':
+        sortedUsers = users.sort((a, b) => b.stats.maxStreak - a.stats.maxStreak);
+        break;
+      case 'currentStreak':
+        sortedUsers = users.sort((a, b) => b.stats.currentStreak - a.stats.currentStreak);
+        break;
+      case 'gamesPlayed':
+        sortedUsers = users.sort((a, b) => b.stats.gamesPlayed - a.stats.gamesPlayed);
+        break;
+      case 'averageGuesses':
+        sortedUsers = users.sort((a, b) => (a.stats.averageGuesses || 0) - (b.stats.averageGuesses || 0));
+        break;
+      default:
+        sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
+    }
+    
+    // Return top users based on limit
+    const leaderboard = sortedUsers.slice(0, LEADERBOARD_LIMIT);
+    
+    res.status(200).send({
+      leaderboard: leaderboard,
+      metric: metric,
+      totalUsers: users.length
+    });
+    
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    res.status(500).send({
+      error: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to fetch leaderboard data.',
+    });
+  }
+}
+
+/**
+ * Handles the checkWord action (default)
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+async function handleCheckWord(req, res) {
+  // Validate the incoming request
+  const requestWord = req.query.word;
+  if (!requestWord || typeof requestWord !== 'string' || requestWord.length !== 5) {
+    return res.status(400).send({
+      error: 'INVALID_REQUEST',
+      message: 'A 5-letter word must be provided as a query parameter.',
+    });
+  }
+
+  const lowerCaseWord = requestWord.toLowerCase();
+  const today = getDateStr();
+
+  try {
+    // Check if user is authenticated by looking for Authorization header
+    const authHeader = req.headers.authorization;
+    let isAuthenticated = false;
+    let userId = null;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.substring(7);
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        isAuthenticated = true;
+        userId = decodedToken.uid;
+      } catch (error) {
+        console.log('Invalid or missing auth token, treating as anonymous user');
+      }
+    }
+
+    // Determine which word to use based on authentication status
+    let targetWord;
+    if (isAuthenticated) {
+      // Use daily word for authenticated users
       const stateDocRef = db.collection('state').doc(today);
       let stateDoc = await stateDocRef.get();
 
@@ -193,39 +250,48 @@ functions.http('router', (req, res) => {
         stateDoc = await stateDocRef.get();
       }
 
-      // 3. Validate that the guessed word is a valid word from our dictionary collection.
-      const wordDoc = await db.collection('words').doc(lowerCaseWord).get();
-      if (!wordDoc.exists) {
-        return res.status(400).send({
-          error: 'INVALID_WORD',
-          message: 'The guessed word is not in our dictionary.',
-        });
-      }
+      targetWord = stateDoc.data().word.toLowerCase();
+      console.log(`Authenticated user ${userId} playing with daily word: ${targetWord}`);
+    } else {
+      // Use static word for anonymous users
+      targetWord = ANONYMOUS_WORD.toLowerCase();
+      console.log(`Anonymous user playing with static word: ${targetWord}`);
+    }
 
-      // 4. Retrieve the daily word and perform the comparison.
-      const dailyWord = stateDoc.data().word.toLowerCase();
-      const dailyWordLetters = new Set(dailyWord.split(''));
-
-      // 5. Calculate the result for each letter.
-      const result = dailyWord.split('').map((letter, i) => {
-        if (lowerCaseWord[i] === letter) {
-          return GUESS_RESULT.correct;
-        }
-        if (dailyWordLetters.has(lowerCaseWord[i])) {
-          return GUESS_RESULT.present;
-        }
-        return GUESS_RESULT.missing;
-      });
-
-      // 6. Send the successful response.
-      res.status(200).send(result);
-
-    } catch (error) {
-      console.error('Error processing word check:', error);
-      res.status(500).send({
-        error: 'INTERNAL_SERVER_ERROR',
-        message: 'An unexpected error occurred.',
+    // Validate that the guessed word is a valid word from our dictionary collection.
+    // For anonymous users, also allow the anonymous word itself as a valid guess
+    const wordDoc = await db.collection('words').doc(lowerCaseWord).get();
+    const isAnonymousWord = lowerCaseWord === ANONYMOUS_WORD.toLowerCase();
+    
+    if (!wordDoc.exists && !isAnonymousWord) {
+      return res.status(400).send({
+        error: 'INVALID_WORD',
+        message: 'The guessed word is not in our dictionary.',
       });
     }
-  });
-});
+
+    // Perform the comparison using the determined target word.
+    const targetWordLetters = new Set(targetWord.split(''));
+
+    // Calculate the result for each letter.
+    const result = targetWord.split('').map((letter, i) => {
+      if (lowerCaseWord[i] === letter) {
+        return GUESS_RESULT.correct;
+      }
+      if (targetWordLetters.has(lowerCaseWord[i])) {
+        return GUESS_RESULT.present;
+      }
+      return GUESS_RESULT.missing;
+    });
+
+    // Send the successful response.
+    res.status(200).send(result);
+
+  } catch (error) {
+    console.error('Error processing word check:', error);
+    res.status(500).send({
+      error: 'INTERNAL_SERVER_ERROR',
+      message: 'An unexpected error occurred.',
+    });
+  }
+}

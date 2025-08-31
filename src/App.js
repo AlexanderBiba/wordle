@@ -18,19 +18,18 @@ export default function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [minLoadingTime, setMinLoadingTime] = useState(true);
+  const [loginPromptDismissed, setLoginPromptDismissed] = useState(false);
   
   const { user, userStats, signInWithGoogle, updateUserStats, loading: authLoading } = useAuth();
   
   const {
     isOnline,
-    isInstalled,
     hasUpdate,
     showInstallBanner,
     registerServiceWorker,
     installPWA,
     skipWaiting,
-    dismissInstallBanner,
-    resetInstallBanner
+    dismissInstallBanner
   } = usePWA();
   
   const {
@@ -51,10 +50,11 @@ export default function App() {
     gameLoading, 
     updateGameState, 
     saveGameStateToFirebase, 
-    handleGameEnd
+    handleGameEnd,
+    user
   );
 
-  const { statusMessage, statusClass } = useStatus(state, gameLoading);
+  const { statusMessage, statusClass, showSignInButton } = useStatus(state, gameLoading, user, loginPromptDismissed);
   const { buttonTheme } = useKeyboardTheme(state);
   const { renderedWords } = useWordRendering(state);
 
@@ -79,9 +79,15 @@ export default function App() {
   const handleSignIn = async () => {
     try {
       await signInWithGoogle();
+      // Reset the dismissed state when user signs in successfully
+      setLoginPromptDismissed(false);
     } catch (error) {
       console.error('Sign in failed:', error);
     }
+  };
+
+  const handleDismissLoginPrompt = () => {
+    setLoginPromptDismissed(true);
   };
 
   useEffect(() => {
@@ -153,7 +159,6 @@ export default function App() {
       <div className="header-container">
         <h1 className="header">
           <span role="img" aria-label="puzzle">🧩</span> Wordle
-          {isInstalled && <span className="pwa-badge" title="Installed as PWA">📱</span>}
         </h1>
         <div className="header-actions">
           <button 
@@ -191,34 +196,43 @@ export default function App() {
               {darkMode ? '☀️' : '🌙'}
             </span>
           </button>
-          {/* Development-only PWA test button */}
-          {process.env.NODE_ENV === 'development' && (
-            <button 
-              className="pwa-test-btn"
-              onClick={resetInstallBanner}
-              aria-label="Reset PWA install banner for testing"
-              title="Reset PWA Install Banner (Dev Only)"
-            >
-              <span className="test-icon">🧪</span>
-            </button>
-          )}
+
         </div>
       </div>
       
-      {/* Always render login prompt to avoid LCP delays */}
-      <div className="login-prompt" style={{ display: user ? 'none' : 'block' }}>
-        <div className="login-content">
-          <h3>🎯 Sign in to track your progress!</h3>
-          <p>Save your stats, earn achievements, and compete with friends</p>
-          <button className="login-btn" onClick={handleSignIn}>
-            <span role="img" aria-label="google">🔍</span> Sign in with Google
-          </button>
+      {/* Login prompt - only show if user is not logged in and not dismissed */}
+      {!user && !loginPromptDismissed && (
+        <div className="login-prompt">
+          <div className="login-content">
+            <button 
+              className="dismiss-login-btn"
+              onClick={handleDismissLoginPrompt}
+              aria-label="Dismiss login prompt"
+              title="Close"
+            >
+              ✕
+            </button>
+            <h3>🎯 Sign in to track your progress!</h3>
+            <p>Save your stats, earn achievements, and compete with friends</p>
+            <button className="login-btn" onClick={handleSignIn}>
+              <span role="img" aria-label="google">🔍</span> Sign in with Google
+            </button>
+          </div>
         </div>
-      </div>
+      )}
       
       <div className="status-wrapper">
         <div className={`status-text ${statusClass}`}>
           <div className="status">{statusMessage}</div>
+          {showSignInButton && (
+            <button 
+              className="status-signin-btn"
+              onClick={handleSignIn}
+              aria-label="Sign in to track progress"
+            >
+              <span role="img" aria-label="google">🔍</span> Sign In to Track Progress
+            </button>
+          )}
         </div>
       </div>
 

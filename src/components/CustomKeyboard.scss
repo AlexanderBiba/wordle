@@ -46,7 +46,7 @@
     }
     
     // Special keys
-    &[aria-label="Enter"],
+    &[aria-label="Submit"],
     &[aria-label="Backspace"] {
       min-width: 4rem;
       font-size: 0.75rem;
@@ -76,6 +76,15 @@
       color: palette.$white;
       border-color: palette.$warning;
       animation: pulse 0.5s ease-in-out;
+    }
+    
+    &.current {
+      background: palette.$primary;
+      color: palette.$white;
+      border-color: palette.$primary;
+      animation: ripple 2s infinite;
+      transform: scale(1.05);
+      box-shadow: palette.$shadow-md, 0 0 20px rgba(palette.$primary, 0.3);
     }
     
     &.default {
@@ -126,7 +135,7 @@
       height: 3rem;
       font-size: 0.75rem;
       
-      &[aria-label="Enter"],
+      &[aria-label="Submit"],
       &[aria-label="Backspace"] {
         min-width: 3rem;
         font-size: 0.625rem;

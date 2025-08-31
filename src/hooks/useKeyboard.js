@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { WORD_LENGTH, NUM_ATTEMPTS, API_ENDPOINTS } from '../constants';
 
-export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateToFirebase, handleGameEnd) => {
+export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateToFirebase, handleGameEnd, user) => {
   const onKeyDown = useCallback(async ({ key }) => {
     const {
       words,
@@ -9,18 +9,17 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
       currLetter,
       gameWon,
       gameLost,
-      invalidWord,
       absentLetters,
       foundLetters,
     } = state;
     
-    if (gameLoading || gameWon || gameLost || (invalidWord && key !== "Backspace")) {
-      return;
-    }
-    
-    // Clear invalid word state when typing
+    // Clear invalid word state when typing (before early return check)
     if (key !== "Backspace" && key !== "Enter") {
       state.invalidWord = false;
+    }
+    
+    if (gameLoading || gameWon || gameLost) {
+      return;
     }
     
     switch (key) {
@@ -34,7 +33,25 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
             words[currWord].map(({ char }) => char).join("")
           );
           
-          const response = await fetch(guessRequest);
+          // Prepare headers for the request
+          const headers = {
+            'Content-Type': 'application/json',
+          };
+          
+          // Add authentication token if user is logged in
+          if (user) {
+            try {
+              const token = await user.getIdToken();
+              headers['Authorization'] = `Bearer ${token}`;
+            } catch (error) {
+              // Failed to get auth token, proceeding as anonymous user
+            }
+          }
+          
+          const response = await fetch(guessRequest, {
+            method: 'GET',
+            headers: headers
+          });
           const guessResponse = await response.json();
           
           if (guessResponse.error === "INVALID_WORD") {
@@ -90,11 +107,7 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
             foundLetters: newFoundLetters,
           };
           
-          console.log('Updating game state with:', {
-            foundLetters: Object.keys(newFoundLetters),
-            absentLetters: Object.keys(newAbsentLetters),
-            guessResponse: guessResponse
-          });
+
           
           updateGameState(newState);
           
@@ -136,7 +149,7 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
           currLetter: Math.min(state.currLetter + 1, WORD_LENGTH),
         });
     }
-  }, [state, gameLoading, updateGameState, saveGameStateToFirebase, handleGameEnd]);
+  }, [state, gameLoading, updateGameState, saveGameStateToFirebase, handleGameEnd, user]);
 
   return { onKeyDown };
 }; 
