@@ -43,6 +43,21 @@ jobs:
           ls -la build/
           echo "Checking for PWA files..."
           ls -la build/ | grep -E "(manifest|sw|logo)"
+          echo "Checking service worker content..."
+          if [ -f "build/sw.js" ]; then
+            echo "✅ Service worker exists"
+            head -5 build/sw.js
+          else
+            echo "❌ Service worker missing"
+          fi
+          echo "Checking manifest content..."
+          if [ -f "build/manifest.json" ]; then
+            echo "✅ Manifest exists"
+            cat build/manifest.json | jq '.name, .start_url, .scope' || echo "Manifest content (jq not available):"
+            cat build/manifest.json
+          else
+            echo "❌ Manifest missing"
+          fi
           
       - name: 📁 Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -111,25 +126,11 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
         
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
+      - name: 📁 Download build artifacts
+        uses: actions/download-artifact@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-          
-      - name: 📦 Install dependencies
-        run: npm ci
-        
-      - name: 🏗️ Build PWA for GitHub Pages
-        run: npm run build:gh-pages
-        env:
-          REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-          REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
-          REACT_APP_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          REACT_APP_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+          name: app-build
+          path: build/
         
       - name: 🧪 Install Lighthouse CI
         run: npm install -g @lhci/cli@0.12.x
@@ -137,7 +138,35 @@ jobs:
       - name: 🔍 Run Lighthouse PWA Audit
         run: |
           echo "Running Lighthouse PWA audit..."
+          echo "Current directory: $(pwd)"
+          echo "Build contents:"
+          ls -la build/
+          echo "Starting Lighthouse audit..."
           lhci autorun --config=./.lighthouserc.json || echo "Lighthouse audit completed"
+          
+      - name: 🔍 Validate PWA Files
+        run: |
+          echo "Validating PWA files..."
+          echo "Service Worker:"
+          if [ -f "build/sw.js" ]; then
+            echo "✅ SW exists, size: $(du -h build/sw.js | cut -f1)"
+            echo "First few lines:"
+            head -3 build/sw.js
+          else
+            echo "❌ Service worker missing"
+          fi
+          
+          echo "Manifest:"
+          if [ -f "build/manifest.json" ]; then
+            echo "✅ Manifest exists, size: $(du -h build/manifest.json | cut -f1)"
+            echo "Manifest content:"
+            cat build/manifest.json
+          else
+            echo "❌ Manifest missing"
+          fi
+          
+          echo "Icons:"
+          ls -la build/logo*.png 2>/dev/null && echo "✅ Icons found" || echo "❌ Icons missing"
           
       - name: 📊 Upload Lighthouse results
         uses: actions/upload-artifact@v4
@@ -157,25 +186,11 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
         
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
+      - name: 📁 Download build artifacts
+        uses: actions/download-artifact@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-          
-      - name: 📦 Install dependencies
-        run: npm ci
-        
-      - name: 🏗️ Build PWA for GitHub Pages
-        run: npm run build:gh-pages
-        env:
-          REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-          REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
-          REACT_APP_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          REACT_APP_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+          name: app-build
+          path: build/
         
       - name: 📊 Check bundle size
         run: |

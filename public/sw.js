@@ -3,12 +3,12 @@ const STATIC_CACHE = `wordle-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `wordle-dynamic-${CACHE_VERSION}`;
 
 const CRITICAL_FILES = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.ico',
-  '/logo192.png',
-  '/logo512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './favicon.ico',
+  './logo192.png',
+  './logo512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -59,7 +59,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.pathname.startsWith('/static/')) {
+  if (url.pathname.includes('/static/')) {
     event.respondWith(
       caches.match(request)
         .then((response) => {
@@ -80,7 +80,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.pathname === '/' || url.pathname === '/index.html') {
+  if (url.pathname === '/' || url.pathname === '/index.html' || url.pathname.endsWith('/index.html')) {
     event.respondWith(
       caches.match(request)
         .then((response) => {
@@ -105,8 +105,8 @@ self.addEventListener('sync', (event) => {
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : 'New Wordle challenge available!',
-    icon: '/logo192.png',
-    badge: '/logo192.png',
+    icon: './logo192.png',
+    badge: './logo192.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -116,12 +116,12 @@ self.addEventListener('push', (event) => {
       {
         action: 'explore',
         title: 'Play Now',
-        icon: '/logo192.png'
+        icon: './logo192.png'
       },
       {
         action: 'close',
         title: 'Close',
-        icon: '/logo192.png'
+        icon: './logo192.png'
       }
     ]
   };

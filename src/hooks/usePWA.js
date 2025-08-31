@@ -48,7 +48,9 @@ export const usePWA = () => {
     
     if ('serviceWorker' in navigator) {
       try {
-        const reg = await navigator.serviceWorker.register('/sw.js');
+        // Use the correct path for the service worker based on deployment
+        const swPath = process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}/sw.js` : '/sw.js';
+        const reg = await navigator.serviceWorker.register(swPath);
         setRegistration(reg);
 
         // Check for updates
