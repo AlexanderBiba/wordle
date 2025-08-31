@@ -4,12 +4,15 @@ import "react-simple-keyboard/build/css/index.css";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { useGameState } from "./hooks/useGameState";
-import { checkAchievements } from "./achievements";
+import { useKeyboard } from "./hooks/useKeyboard";
+import { useGameStats } from "./hooks/useGameStats";
+import { useStatus } from "./hooks/useStatus";
+import { useKeyboardTheme } from "./hooks/useKeyboardTheme";
+import { useWordRendering } from "./hooks/useWordRendering";
 import UserProfile from "./components/UserProfile";
 import Leaderboard from "./components/Leaderboard";
-
-const WORD_LENGTH = 5;
-const NUM_ATTEMPTS = 6;
+import { WORD_LENGTH, NUM_ATTEMPTS, API_ENDPOINTS, KEYBOARD_LAYOUT, KEYBOARD_DISPLAY } from "./constants";
+import { calculateWinPercentage, getFallbackAvatar } from "./utils";
 
 
 
@@ -31,6 +34,27 @@ export default function App() {
     toggleDarkMode,
     saveGameStateToFirebase
   } = useGameState(user);
+
+  // Use game stats hook
+  const { handleGameEnd } = useGameStats(stats, updateStats, user, userStats, updateUserStats);
+
+  // Use custom keyboard hook
+  const { onKeyDown } = useKeyboard(
+    state, 
+    gameLoading, 
+    updateGameState, 
+    saveGameStateToFirebase, 
+    handleGameEnd
+  );
+
+  // Use status hook
+  const { statusMessage, statusClass } = useStatus(state, gameLoading);
+
+  // Use keyboard theme hook
+  const { buttonTheme } = useKeyboardTheme(state);
+
+  // Use word rendering hook
+  const { renderedWords } = useWordRendering(state);
 
   // Combined loading state for app initialization
   const isAppLoading = authLoading || gameLoading || minLoadingTime;
@@ -59,175 +83,7 @@ export default function App() {
     }
   };
 
-  const getStatusMessage = () => {
-    if (gameLoading) return "Checking word...";
-    if (state.gameWon) return "🎉 Amazing! You got it! Come back tomorrow for a new challenge!";
-    if (state.gameLost) return "😔 Game over! The word was tough today. Try again tomorrow!";
-    if (state.invalidWord) return "❌ Not a valid word. Try something else!";
-    if (state.currWord) {
-      const attemptsLeft = NUM_ATTEMPTS - state.currWord;
-      return `${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} left`;
-    }
-    return `Welcome to Wordle! Guess the ${WORD_LENGTH}-letter word in ${NUM_ATTEMPTS} attempts.`;
-  };
 
-  const getStatusClass = () => {
-    if (gameLoading) return "loading";
-    if (state.gameWon) return "win";
-    if (state.gameLost) return "lose";
-    if (state.invalidWord) return "invalid";
-    return "";
-  };
-
-    const handleGameEnd = useCallback((won, attempts) => {
-    const newStats = { ...stats };
-    newStats.gamesPlayed += 1;
-    
-    if (won) {
-      newStats.gamesWon += 1;
-      newStats.currentStreak += 1;
-      newStats.maxStreak = Math.max(newStats.maxStreak, newStats.currentStreak);
-      newStats.guessDistribution[attempts - 1] += 1;
-    } else {
-      newStats.currentStreak = 0;
-    }
-    
-    // Update Firebase stats
-    updateStats(newStats);
-
-    // Update cloud stats if user is signed in
-    if (user && userStats) {
-      const cloudStats = { ...userStats };
-      cloudStats.gamesPlayed += 1;
-      
-      if (won) {
-        cloudStats.gamesWon += 1;
-        cloudStats.currentStreak += 1;
-        cloudStats.maxStreak = Math.max(cloudStats.maxStreak, cloudStats.currentStreak);
-        cloudStats.guessDistribution[attempts - 1] += 1;
-        cloudStats.totalGuesses += attempts;
-      } else {
-        cloudStats.currentStreak = 0;
-        cloudStats.totalGuesses += NUM_ATTEMPTS;
-      }
-
-      // Check for new achievements
-      const newAchievements = checkAchievements(cloudStats, { guesses: attempts });
-      if (newAchievements.length > 0) {
-        cloudStats.achievements = [...(cloudStats.achievements || []), ...newAchievements];
-      }
-
-      updateUserStats(cloudStats);
-    }
-  }, [stats, updateStats, user, userStats, updateUserStats]);
-
-  const onKeyDown = useCallback(async ({ key }) => {
-    const {
-      words,
-      currWord,
-      currLetter,
-      gameWon,
-      gameLost,
-      invalidWord,
-      absentLetters,
-      foundLetters,
-    } = state;
-    if (gameLoading || gameWon || gameLost || (invalidWord && key !== "Backspace"))
-      return;
-    state.invalidWord = false;
-    switch (key) {
-      case "Enter":
-        if (currLetter < WORD_LENGTH) return;
-        const guessRequest = new URL(
-          "router",
-          "https://words-935269737264.europe-west1.run.app"
-        );
-        guessRequest.searchParams.append(
-          "word",
-          words[currWord].map(({ char }) => char).join("")
-        );
-        // Note: Loading state is now managed by Firebase hook
-        const guessResponse = await (await fetch(guessRequest)).json();
-        if (guessResponse.error === "INVALID_WORD") {
-          updateGameState({
-            ...state,
-            invalidWord: true,
-          });
-          return;
-        } else if (guessResponse.error) {
-          console.error(guessResponse);
-          return;
-        }
-        const tmpWords = words.map((word, i) => {
-          if (i !== currWord) return word;
-          return word.map((letter, j) => {
-            switch (guessResponse[j]) {
-              case 2:
-                foundLetters[letter.char] = true;
-                return { ...letter, exact: true };
-              case 1:
-                foundLetters[letter.char] = true;
-                return { ...letter, misplaced: true };
-              default:
-                absentLetters[letter.char] = true;
-                return letter;
-            }
-          });
-        });
-        const gameWon = tmpWords[currWord].every((letter) => letter.exact);
-        const gameLost = currWord === NUM_ATTEMPTS - 1 && !gameWon;
-        
-        if (gameWon || gameLost) {
-          handleGameEnd(gameWon, currWord + 1);
-        }
-        
-        const newState = {
-          ...state,
-          words: tmpWords,
-          currWord: gameWon ? null : currWord + 1,
-          currLetter: gameWon ? null : 0,
-          gameWon: gameWon,
-          gameLost: gameLost,
-          absentLetters,
-          foundLetters,
-        };
-        
-        updateGameState(newState);
-        
-        // Save to Firebase when word is submitted or game ends
-        if (gameWon || gameLost) {
-          // Game ended, save immediately
-          saveGameStateToFirebase(newState);
-        } else {
-          // Word submitted, save the current state
-          saveGameStateToFirebase(newState);
-        }
-        break;
-      case "Backspace":
-        updateGameState({
-          ...state,
-          words: words.map((word, i) =>
-            i === state.currWord
-              ? word.map((letter, j) => (j === state.currLetter - 1 ? {} : letter))
-              : word
-          ),
-          currLetter: Math.max(state.currLetter - 1, 0),
-        });
-        break;
-      default:
-        const char = key.toUpperCase();
-        if (char.length !== 1 || char < "A" || char > "Z") return;
-        updateGameState({
-          ...state,
-          words: words.map((word, i) =>
-            i === state.currWord
-              ? word.map((letter, j) => (j === state.currLetter ? { char } : letter))
-              : word
-          ),
-          currLetter: Math.min(state.currLetter + 1, WORD_LENGTH),
-        });
-    }
-  }, [state, gameLoading, updateGameState, saveGameStateToFirebase, handleGameEnd]);
 
   useEffect(() => {
     document.addEventListener("keydown", onKeyDown);
@@ -236,7 +92,7 @@ export default function App() {
 
 
 
-  const winPercentage = stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
+  const winPercentage = calculateWinPercentage(stats.gamesPlayed, stats.gamesWon);
 
   // Show app loading screen while initializing
   if (isAppLoading) {
@@ -279,11 +135,11 @@ export default function App() {
               title="User Profile"
             >
               <img 
-                src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=2563eb&color=fff&size=120`}
+                src={user.photoURL || getFallbackAvatar(user.displayName)}
                 alt={user.displayName}
                 className="profile-avatar"
                 onError={(e) => {
-                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=2563eb&color=fff&size=120`;
+                  e.target.src = getFallbackAvatar(user.displayName);
                 }}
               />
             </button>
@@ -314,46 +170,25 @@ export default function App() {
       )}
       
       <div className="status-wrapper">
-        <div className={`status-text ${getStatusClass()}`}>
-          <div className="status">{getStatusMessage()}</div>
+        <div className={`status-text ${statusClass}`}>
+          <div className="status">{statusMessage}</div>
         </div>
       </div>
 
       <div className="wordle-wrapper">
         <div className="wordle">
-          {state.words.map((word, i) => {
-            const current = i === state.currWord;
-            const classes = [];
-            if (current) classes.push("current");
-            if (i === state.currWord && state.invalidWord) classes.push("invalid");
-
-            return (
-              <div key={i} className={["word"].concat(classes).join(" ")}>
-                {(current
-                  ? word.map((letter, j) =>
-                      j === state.currLetter
-                        ? { ...letter, current: true }
-                        : { ...letter, current: false }
-                    )
-                  : word
-                ).map(({ exact, misplaced, current, char }, j) => {
-                  const classes = [];
-                  if (!char) classes.push("empty");
-                  if (exact) classes.push("exact");
-                  if (misplaced) classes.push("misplaced");
-                  if (current) classes.push("current");
-                  return (
-                    <div
-                      key={j}
-                      className={["letter"].concat(classes).join(" ")}
-                    >
-                      <span>{char ?? ""}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+          {renderedWords.map(({ key, classes, letters }) => (
+            <div key={key} className={classes}>
+              {letters.map(({ key: letterKey, char, classes: letterClasses }) => (
+                <div
+                  key={letterKey}
+                  className={["letter"].concat(letterClasses).join(" ")}
+                >
+                  <span>{char}</span>
+                </div>
+              ))}
+            </div>
+          ))}
           
           {/* Keyboard integrated within the wordle card */}
           <div className="keyboard-wrapper">
@@ -369,71 +204,10 @@ export default function App() {
                 })
               }
               layout={{
-                default: [
-                  ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"].join(" "),
-                  ["a", "s", "d", "f", "g", "h", "j", "k", "l"].join(" "),
-                  [
-                    "{backspace}",
-                    "z",
-                    "x",
-                    "c",
-                    "v",
-                    "b",
-                    "n",
-                    "m",
-                    "{enter}",
-                  ].join(" "),
-                ],
+                default: KEYBOARD_LAYOUT.default.map(row => row.join(" "))
               }}
-              display={{
-                "{backspace}": "⌫",
-                "{enter}": "⏎",
-              }}
-              buttonTheme={(state.invalidWord
-                ? [
-                    {
-                      class: "emphasis",
-                      buttons: "{backspace}",
-                    },
-                  ]
-                : []
-              )
-                .concat(
-                  !state.invalidWord &&
-                    state.words[state.currWord]?.filter(({ char }) => char)
-                      .length === WORD_LENGTH
-                    ? [
-                        {
-                          class: "emphasis",
-                          buttons: "{enter}",
-                        },
-                      ]
-                    : []
-                )
-                .concat(
-                  Object.keys(state.absentLetters).length
-                    ? [
-                        {
-                          class: "absent-letter",
-                          buttons: Object.keys(state.absentLetters)
-                            .map((c) => c.toLowerCase())
-                            .join(" "),
-                        },
-                      ]
-                    : []
-                )
-                .concat(
-                  Object.keys(state.foundLetters).length
-                    ? [
-                        {
-                          class: "found-letter",
-                          buttons: Object.keys(state.foundLetters)
-                            .map((c) => c.toLowerCase())
-                            .join(" "),
-                        },
-                      ]
-                    : []
-                )}
+              display={KEYBOARD_DISPLAY}
+              buttonTheme={buttonTheme}
               physicalKeyboardHighlight={true}
             />
           </div>

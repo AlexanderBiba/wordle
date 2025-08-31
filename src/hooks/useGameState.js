@@ -1,38 +1,20 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-
-const NUM_ATTEMPTS = 6;
-const WORD_LENGTH = 5;
-
-const pad = (num) => `${num < 10 ? "0" : ""}${num}`;
-const getDateStr = (date = new Date()) =>
-  `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(
-    date.getUTCDate()
-  )}`;
+import { NUM_ATTEMPTS, WORD_LENGTH, DEFAULT_GAME_STATE, DEFAULT_STATS, getDateStr } from '../constants';
 
 export const useGameState = (user) => {
   const today = getDateStr();
   
   // Default game state
   const defaultState = useMemo(() => ({
-    words: Array(NUM_ATTEMPTS).fill(Array(WORD_LENGTH).fill({})),
-    currWord: 0,
-    currLetter: 0,
-    gameWon: false,
-    gameLost: false,
-    invalidWord: false,
-    absentLetters: {},
-    foundLetters: {},
+    ...DEFAULT_GAME_STATE,
     lastPlayedDate: today,
   }), [today]);
 
   // Default stats
   const defaultStats = useMemo(() => ({
-    gamesPlayed: 0,
-    gamesWon: 0,
-    currentStreak: 0,
-    maxStreak: 0,
+    ...DEFAULT_STATS,
     guessDistribution: Array(NUM_ATTEMPTS).fill(0),
   }), []);
 
@@ -182,7 +164,7 @@ export const useGameState = (user) => {
 
 
   // Save stats to Firebase
-  const saveStats = async (newStats) => {
+  const saveStats = useCallback(async (newStats) => {
     if (!user) return;
 
     try {
@@ -192,19 +174,19 @@ export const useGameState = (user) => {
     } catch (error) {
       console.error('Error saving stats:', error);
     }
-  };
+  }, [user, getUserStatsDoc]);
 
 
 
   // Update game state locally (marks as dirty, doesn't save immediately)
-  const updateGameState = (updater) => {
+  const updateGameState = useCallback((updater) => {
     const newState = typeof updater === 'function' ? updater(state) : updater;
     setState(newState);
     setIsDirty(true); // Mark as needing to be saved
-  };
+  }, [state]);
 
   // Save game state to Firebase (only when explicitly called)
-  const saveGameStateToFirebase = async (gameState = state) => {
+  const saveGameStateToFirebase = useCallback(async (gameState = state) => {
     if (!user) return;
 
     try {
@@ -216,25 +198,25 @@ export const useGameState = (user) => {
     } catch (error) {
       console.error('Error saving game state:', error);
     }
-  };
+  }, [user, state, serializeGameState, getUserGameDoc]);
 
   // Force save current state (useful for game end, etc.)
-  const forceSave = () => {
+  const forceSave = useCallback(() => {
     if (isDirty) {
       saveGameStateToFirebase();
     }
-  };
+  }, [isDirty, saveGameStateToFirebase]);
 
   // Update stats
-  const updateStats = (updater) => {
+  const updateStats = useCallback((updater) => {
     const newStats = typeof updater === 'function' ? updater(stats) : updater;
     saveStats(newStats);
-  };
+  }, [stats, saveStats]);
 
   // Toggle dark mode (local only, no Firebase sync)
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+  const toggleDarkMode = useCallback(() => {
+    setDarkMode(prev => !prev);
+  }, []);
 
   // Load initial state when user changes
   useEffect(() => {

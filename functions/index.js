@@ -4,17 +4,25 @@ import admin from 'firebase-admin';
 import cors from 'cors';
 import wordleWords from './words.js';
 
-// --- Configuration ---
-
-const allowedOrigins = [
+// Constants
+const ALLOWED_ORIGINS = [
     'https://alexanderbiba.github.io',
     'http://localhost:3000' // for local testing
 ];
 
+const LEADERBOARD_LIMIT = 50;
+const GUESS_RESULT = {
+  missing: 0, // Letter is not in the word
+  present: 1, // Letter is in the word but in the wrong position
+  correct: 2, // Letter is in the word and in the correct position
+};
+
+// --- Configuration ---
+
 const corsHandler = cors({
   origin: function (origin, callback) {
     // Allow requests with no origin, like server-to-server or REST tools
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -54,12 +62,7 @@ const pad = (num) => `${num < 10 ? '0' : ''}${num}`;
 const getDateStr = (date = new Date()) =>
   `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}`;
 
-// Enum-like object for guess results to make code more readable.
-const guessResult = {
-  missing: 0, // Letter is not in the word
-  present: 1, // Letter is in the word but in the wrong position
-  correct: 2, // Letter is in the word and in the correct position
-};
+
 
 // --- Cloud Function Entry Point ---
 // The name 'router' here must match the entry point configured in Cloud Run.
@@ -133,8 +136,8 @@ functions.http('router', (req, res) => {
             sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
         }
         
-        // Return top 50 users
-        const leaderboard = sortedUsers.slice(0, 50);
+        // Return top users based on limit
+        const leaderboard = sortedUsers.slice(0, LEADERBOARD_LIMIT);
         
         res.status(200).send({
           leaderboard: leaderboard,
@@ -194,12 +197,12 @@ functions.http('router', (req, res) => {
       // 5. Calculate the result for each letter.
       const result = dailyWord.split('').map((letter, i) => {
         if (lowerCaseWord[i] === letter) {
-          return guessResult.correct;
+          return GUESS_RESULT.correct;
         }
         if (dailyWordLetters.has(lowerCaseWord[i])) {
-          return guessResult.present;
+          return GUESS_RESULT.present;
         }
-        return guessResult.missing;
+        return GUESS_RESULT.missing;
       });
 
       // 6. Send the successful response.

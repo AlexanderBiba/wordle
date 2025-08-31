@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { API_ENDPOINTS } from '../constants';
 import './Leaderboard.scss';
 
 const Leaderboard = ({ isOpen, onClose }) => {
@@ -14,7 +15,7 @@ const Leaderboard = ({ isOpen, onClose }) => {
       setError(null);
       
       // Use Firebase function for leaderboard data
-      const response = await fetch(`https://words-935269737264.europe-west1.run.app/router?action=getLeaderboard&metric=${activeTab}`, {
+      const response = await fetch(`${API_ENDPOINTS.LEADERBOARD}?action=getLeaderboard&metric=${activeTab}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

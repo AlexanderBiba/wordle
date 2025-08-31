@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   signInWithPopup, 
   signOut, 
@@ -11,11 +11,31 @@ import {
   updateDoc 
 } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../firebase';
+import { DEFAULT_STATS } from '../constants';
 
 export const useAuth = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState(null);
+
+  const getUserStats = useCallback(async (uid) => {
+    try {
+      const userRef = doc(db, 'users', uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        setUserStats(userSnap.data().stats);
+      } else {
+        // User document doesn't exist (e.g., deleted from Firestore)
+        // Set default stats to prevent null reference errors
+        setUserStats(DEFAULT_STATS);
+      }
+    } catch (error) {
+      console.error('Error getting user stats:', error);
+      // Set default stats on error as well
+      setUserStats(DEFAULT_STATS);
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -31,7 +51,7 @@ export const useAuth = () => {
     });
 
     return unsubscribe;
-  }, []);
+  }, [getUserStats]);
 
   const signInWithGoogle = async () => {
     try {
@@ -57,7 +77,7 @@ export const useAuth = () => {
     }
   };
 
-  const createUserProfile = async (user) => {
+  const createUserProfile = useCallback(async (user) => {
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
 
@@ -70,17 +90,7 @@ export const useAuth = () => {
         photoURL: user.photoURL,
         createdAt: new Date(),
         lastLogin: new Date(),
-        stats: {
-          gamesPlayed: 0,
-          gamesWon: 0,
-          currentStreak: 0,
-          maxStreak: 0,
-          totalGuesses: 0,
-          averageGuesses: 0,
-          bestTime: null,
-          achievements: [],
-          guessDistribution: Array(6).fill(0)
-        }
+        stats: DEFAULT_STATS
       };
       
       await setDoc(userRef, userProfile);
@@ -90,48 +100,9 @@ export const useAuth = () => {
         lastLogin: new Date()
       });
     }
-  };
+  }, []);
 
-  const getUserStats = async (uid) => {
-    try {
-      const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
-      
-      if (userSnap.exists()) {
-        setUserStats(userSnap.data().stats);
-      } else {
-        // User document doesn't exist (e.g., deleted from Firestore)
-        // Set default stats to prevent null reference errors
-        setUserStats({
-          gamesPlayed: 0,
-          gamesWon: 0,
-          currentStreak: 0,
-          maxStreak: 0,
-          totalGuesses: 0,
-          averageGuesses: 0,
-          bestTime: null,
-          achievements: [],
-          guessDistribution: Array(6).fill(0)
-        });
-      }
-    } catch (error) {
-      console.error('Error getting user stats:', error);
-      // Set default stats on error as well
-      setUserStats({
-        gamesPlayed: 0,
-        gamesWon: 0,
-        currentStreak: 0,
-        maxStreak: 0,
-        totalGuesses: 0,
-        averageGuesses: 0,
-        bestTime: null,
-        achievements: [],
-        guessDistribution: Array(6).fill(0)
-      });
-    }
-  };
-
-  const updateUserStats = async (newStats) => {
+  const updateUserStats = useCallback(async (newStats) => {
     if (!user) return;
 
     try {
@@ -145,7 +116,7 @@ export const useAuth = () => {
     } catch (error) {
       console.error('Error updating user stats:', error);
     }
-  };
+  }, [user]);
 
   return {
     user,

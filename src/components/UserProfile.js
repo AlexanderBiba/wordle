@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { ACHIEVEMENTS, getAchievementProgress } from '../achievements';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { DEFAULT_STATS } from '../constants';
 import './UserProfile.scss';
 
 const UserProfile = ({ isOpen, onClose }) => {
@@ -23,32 +24,12 @@ const UserProfile = ({ isOpen, onClose }) => {
         setUserStats(userSnap.data().stats);
       } else {
         // Set default stats if user document doesn't exist
-        setUserStats({
-          gamesPlayed: 0,
-          gamesWon: 0,
-          currentStreak: 0,
-          maxStreak: 0,
-          totalGuesses: 0,
-          averageGuesses: 0,
-          bestTime: null,
-          achievements: [],
-          guessDistribution: Array(6).fill(0)
-        });
+        setUserStats(DEFAULT_STATS);
       }
     } catch (error) {
       console.error('Error fetching user stats:', error);
       // Set default stats on error
-      setUserStats({
-        gamesPlayed: 0,
-        gamesWon: 0,
-        currentStreak: 0,
-        maxStreak: 0,
-        totalGuesses: 0,
-        averageGuesses: 0,
-        bestTime: null,
-        achievements: [],
-        guessDistribution: Array(6).fill(0)
-      });
+      setUserStats(DEFAULT_STATS);
     } finally {
       setLoading(false);
     }
