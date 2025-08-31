@@ -22,7 +22,6 @@ export const useGameState = (user) => {
   const [stats, setStats] = useState(defaultStats);
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
-  const [isDirty, setIsDirty] = useState(false); // Track if state needs saving
 
   // Get user's game document reference
   const getUserGameDoc = useCallback(() => {
@@ -35,13 +34,8 @@ export const useGameState = (user) => {
     return doc(db, 'users', user.uid, 'stats', 'wordle');
   }, [user]);
 
-
-
-
-
   // Serialize game state for Firebase (convert nested arrays to flat structure)
   const serializeGameState = useCallback((gameState) => {
-    // Deep clone and flatten the state
     const serialized = {
       currWord: gameState.currWord,
       currLetter: gameState.currLetter,
@@ -96,7 +90,6 @@ export const useGameState = (user) => {
       gameLost: firebaseData.gameLost || false,
       invalidWord: firebaseData.invalidWord || false,
       lastPlayedDate: firebaseData.lastPlayedDate || today,
-
       words: words,
       absentLetters: (firebaseData.absentLetters || []).reduce((acc, letter) => {
         acc[letter] = true;
@@ -161,8 +154,6 @@ export const useGameState = (user) => {
     }
   }, [user, defaultState, defaultStats, deserializeGameState, getUserGameDoc, getUserStatsDoc, serializeGameState, today]);
 
-
-
   // Save stats to Firebase
   const saveStats = useCallback(async (newStats) => {
     if (!user) return;
@@ -184,16 +175,13 @@ export const useGameState = (user) => {
     }
   }, [user, getUserStatsDoc]);
 
-
-
-  // Update game state locally (marks as dirty, doesn't save immediately)
+  // Update game state locally
   const updateGameState = useCallback((updater) => {
     const newState = typeof updater === 'function' ? updater(state) : updater;
     setState(newState);
-    setIsDirty(true); // Mark as needing to be saved
   }, [state]);
 
-  // Save game state to Firebase (only when explicitly called)
+  // Save game state to Firebase
   const saveGameStateToFirebase = useCallback(async (gameState = state) => {
     if (!user) return;
 
@@ -202,18 +190,10 @@ export const useGameState = (user) => {
       const serializedState = serializeGameState(gameState);
       
       await setDoc(gameDoc, serializedState);
-      setIsDirty(false); // Mark as saved
     } catch (error) {
       console.error('Error saving game state:', error);
     }
   }, [user, state, serializeGameState, getUserGameDoc]);
-
-  // Force save current state (useful for game end, etc.)
-  const forceSave = useCallback(() => {
-    if (isDirty) {
-      saveGameStateToFirebase();
-    }
-  }, [isDirty, saveGameStateToFirebase]);
 
   // Update stats
   const updateStats = useCallback((updater) => {
@@ -239,8 +219,6 @@ export const useGameState = (user) => {
     }
   }, [user, defaultState, defaultStats, loadGameState]);
 
-
-
   return {
     state,
     stats,
@@ -250,7 +228,5 @@ export const useGameState = (user) => {
     updateStats,
     toggleDarkMode,
     saveGameStateToFirebase,
-    forceSave,
-    isDirty,
   };
 }; 

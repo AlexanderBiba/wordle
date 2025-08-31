@@ -14,8 +14,6 @@ import Leaderboard from "./components/Leaderboard";
 import { KEYBOARD_LAYOUT, KEYBOARD_DISPLAY } from "./constants";
 import { calculateWinPercentage, getFallbackAvatar } from "./utils";
 
-
-
 export default function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -63,7 +61,7 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setMinLoadingTime(false);
-    }, 1000); // Show loading for at least 1 second
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -73,8 +71,6 @@ export default function App() {
     document.body.classList.toggle('dark-mode', darkMode);
   }, [darkMode]);
 
-
-
   const handleSignIn = async () => {
     try {
       await signInWithGoogle();
@@ -83,14 +79,10 @@ export default function App() {
     }
   };
 
-
-
   useEffect(() => {
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [onKeyDown]);
-
-
 
   const winPercentage = calculateWinPercentage(stats.gamesPlayed, stats.gamesWon);
 
@@ -261,8 +253,6 @@ export default function App() {
           </div>
         </div>
       )}
-
-
 
       {/* User Profile Modal */}
       <UserProfile 

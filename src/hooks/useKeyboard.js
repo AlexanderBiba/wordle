@@ -18,7 +18,10 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
       return;
     }
     
-    state.invalidWord = false;
+    // Clear invalid word state when typing
+    if (key !== "Backspace" && key !== "Enter") {
+      state.invalidWord = false;
+    }
     
     switch (key) {
       case "Enter":
@@ -41,7 +44,7 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
             });
             return;
           } else if (guessResponse.error) {
-            console.error(guessResponse);
+            console.error('Word validation error:', guessResponse.error);
             return;
           }
           
@@ -84,15 +87,14 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
           updateGameState(newState);
           
           // Save to Firebase when word is submitted or game ends
-          if (gameWon || gameLost) {
-            // Game ended, save immediately
-            saveGameStateToFirebase(newState);
-          } else {
-            // Word submitted, save the current state
-            saveGameStateToFirebase(newState);
-          }
+          saveGameStateToFirebase(newState);
         } catch (error) {
           console.error('Error processing guess:', error);
+          // Set invalid word state on error
+          updateGameState({
+            ...state,
+            invalidWord: true,
+          });
         }
         break;
         

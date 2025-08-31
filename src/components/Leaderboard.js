@@ -62,8 +62,6 @@ const Leaderboard = ({ isOpen, onClose }) => {
     }
   }, [isOpen, fetchLeaderboard]);
 
-
-
   const getMockLeaderboardData = () => {
     // Mock data for demonstration
     return [

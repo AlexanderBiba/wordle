@@ -88,11 +88,6 @@
   }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 // Reset and base styles
 * {
   box-sizing: border-box;
@@ -187,8 +182,8 @@ body {
   z-index: 1;
 }
 
-// Leaderboard button
-.leaderboard-btn {
+// Common button styles
+%button-base {
   background: rgba(255, 255, 255, 0.1);
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
@@ -218,6 +213,11 @@ body {
     outline: none;
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
   }
+}
+
+// Leaderboard button
+.leaderboard-btn {
+  @extend %button-base;
   
   .leaderboard-icon {
     font-size: 1.25rem;
@@ -225,39 +225,9 @@ body {
   }
 }
 
-
-
 // Profile button
 .profile-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  padding: 0;
-  cursor: pointer;
-  transition: all animation.$transition-normal;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: scale(1.05);
-  }
-  
-  &:active {
-    transform: scale(0.95);
-  }
-  
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
-  }
+  @extend %button-base;
   
   .profile-avatar {
     width: 100%;
@@ -308,8 +278,6 @@ body {
     transform: scale(1.1);
   }
 }
-
-
 
 @keyframes shimmer {
   0% { 
@@ -612,8 +580,6 @@ body {
       );
       animation: shimmer 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
-    
-
   }
 
   &.misplaced {
@@ -656,7 +622,6 @@ body {
   span {
     transition: animation.$transition-fast;
     position: relative;
-    z-index: 1;
   }
 }
 
@@ -785,7 +750,7 @@ body {
       overflow: hidden;
       position: relative;
       border: 1px solid palette.$gray-200;
-      min-width: 60px; // Ensure minimum bar width
+      min-width: 60px;
       
       .guess-fill {
         height: 100%;
@@ -1126,6 +1091,7 @@ body {
       font-size: 0.6rem;
     }
   }
+  
   .header-actions {
     gap: 0.5rem;
   }
