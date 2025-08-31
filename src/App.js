@@ -29,7 +29,8 @@ export default function App() {
     registerServiceWorker,
     installPWA,
     skipWaiting,
-    dismissInstallBanner
+    dismissInstallBanner,
+    resetInstallBanner
   } = usePWA();
   
   const {
@@ -190,6 +191,17 @@ export default function App() {
               {darkMode ? '☀️' : '🌙'}
             </span>
           </button>
+          {/* Development-only PWA test button */}
+          {process.env.NODE_ENV === 'development' && (
+            <button 
+              className="pwa-test-btn"
+              onClick={resetInstallBanner}
+              aria-label="Reset PWA install banner for testing"
+              title="Reset PWA Install Banner (Dev Only)"
+            >
+              <span className="test-icon">🧪</span>
+            </button>
+          )}
         </div>
       </div>
       

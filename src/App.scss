@@ -387,23 +387,28 @@ body {
   justify-content: center;
   min-width: 3rem;
   height: 3rem;
-  position: relative;
-  z-index: 1;
+}
+
+// PWA test button (development only)
+.pwa-test-btn {
+  @extend %button-base;
+  background: rgba(255, 193, 7, 0.2);
+  border-color: rgba(255, 193, 7, 0.4);
+  
+  .test-icon {
+    font-size: 1.25rem;
+    color: palette.$white;
+  }
   
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: scale(1.05);
+    background: rgba(255, 193, 7, 0.3);
+    border-color: rgba(255, 193, 7, 0.6);
   }
-  
-  &:active {
-    transform: scale(0.95);
-  }
-  
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
-  }
+}
+
+// Theme toggle button
+.theme-toggle {
+  @extend %button-base;
   
   .toggle-icon {
     font-size: 1.25rem;

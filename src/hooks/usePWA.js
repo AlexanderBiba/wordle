@@ -8,21 +8,69 @@ export const usePWA = () => {
   const [isInstalled, setIsInstalled] = useState(false);
   const [hasUpdate, setHasUpdate] = useState(false);
   const [registration, setRegistration] = useState(null);
-  const [showInstallBanner, setShowInstallBanner] = useState(!isDevelopment);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
 
   // Check if app is installed
   useEffect(() => {
     const checkInstallation = () => {
+      // Check if running in standalone mode (installed PWA)
       if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
         setIsInstalled(true);
-      } else if (window.navigator.standalone) {
-        setIsInstalled(true);
+        setShowInstallBanner(false);
+        return true;
       }
+      
+      // Check for iOS standalone mode
+      if (window.navigator.standalone) {
+        setIsInstalled(true);
+        setShowInstallBanner(false);
+        return true;
+      }
+      
+      // Check if app is installed via other means
+      if (window.location.search.includes('source=pwa') || 
+          document.referrer.includes('android-app://') ||
+          window.navigator.userAgent.includes('Mobile') && window.navigator.userAgent.includes('Safari')) {
+        setIsInstalled(true);
+        setShowInstallBanner(false);
+        return true;
+      }
+      
+      return false;
     };
 
-    checkInstallation();
-    window.addEventListener('beforeinstallprompt', () => setIsInstalled(false));
-  }, []);
+    const isAlreadyInstalled = checkInstallation();
+    
+    // Listen for app installation event
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setShowInstallBanner(false);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('appinstalled', handleAppInstalled);
+    
+    // Only set up install prompt if not already installed
+    if (!isAlreadyInstalled) {
+      const handleBeforeInstallPrompt = (e) => {
+        e.preventDefault();
+        setDeferredPrompt(e);
+        // Only show banner if we have a deferred prompt, app is not installed, and user hasn't dismissed it
+        if (!isInstalled && !localStorage.getItem('pwa-install-dismissed')) {
+          setShowInstallBanner(true);
+        }
+      };
+
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.removeEventListener('appinstalled', handleAppInstalled);
+      };
+    }
+    
+    return () => window.removeEventListener('appinstalled', handleAppInstalled);
+  }, [isInstalled]);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -85,16 +133,16 @@ export const usePWA = () => {
       return;
     }
     
-    if (window.deferredPrompt) {
-      window.deferredPrompt.prompt();
-      const { outcome } = await window.deferredPrompt.userChoice;
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
         setIsInstalled(true);
         setShowInstallBanner(false);
       }
-      window.deferredPrompt = null;
+      setDeferredPrompt(null);
     }
-  }, [isDevelopment]);
+  }, [deferredPrompt, isDevelopment]);
 
   // Skip waiting for service worker update
   const skipWaiting = useCallback(() => {
@@ -106,23 +154,17 @@ export const usePWA = () => {
   // Dismiss install banner
   const dismissInstallBanner = useCallback(() => {
     setShowInstallBanner(false);
+    // Remember that user dismissed the banner
+    localStorage.setItem('pwa-install-dismissed', 'true');
   }, []);
 
-  // Get PWA installation prompt
-  useEffect(() => {
-    if (isDevelopment) {
-      console.log('PWA: Install prompt handling disabled in development mode');
-      return;
+  // Reset dismissed state (for testing)
+  const resetInstallBanner = useCallback(() => {
+    localStorage.removeItem('pwa-install-dismissed');
+    if (deferredPrompt && !isInstalled) {
+      setShowInstallBanner(true);
     }
-    
-    const handleBeforeInstallPrompt = (e) => {
-      window.deferredPrompt = e;
-      // Let browser handle install prompt naturally
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  }, [isDevelopment]);
+  }, [deferredPrompt, isInstalled]);
 
   return {
     isOnline,
@@ -133,6 +175,7 @@ export const usePWA = () => {
     registerServiceWorker,
     installPWA,
     skipWaiting,
-    dismissInstallBanner
+    dismissInstallBanner,
+    resetInstallBanner
   };
 }; 
