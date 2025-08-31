@@ -49,6 +49,13 @@ const Leaderboard = ({ isOpen, onClose }) => {
     }
   }, [activeTab]);
 
+  // Handle tab changes with immediate loading state
+  const handleTabChange = useCallback((newTab) => {
+    setActiveTab(newTab);
+    setLoading(true);
+    setError(null);
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       fetchLeaderboard();
@@ -185,31 +192,31 @@ const Leaderboard = ({ isOpen, onClose }) => {
         <div className="leaderboard-tabs">
           <button 
             className={`tab ${activeTab === 'winRate' ? 'active' : ''}`}
-            onClick={() => setActiveTab('winRate')}
+            onClick={() => handleTabChange('winRate')}
           >
             🎯 Win Rate
           </button>
           <button 
             className={`tab ${activeTab === 'maxStreak' ? 'active' : ''}`}
-            onClick={() => setActiveTab('maxStreak')}
+            onClick={() => handleTabChange('maxStreak')}
           >
             🔥 Best Streak
           </button>
           <button 
             className={`tab ${activeTab === 'currentStreak' ? 'active' : ''}`}
-            onClick={() => setActiveTab('currentStreak')}
+            onClick={() => handleTabChange('currentStreak')}
           >
             ⚡ Current Streak
           </button>
           <button 
             className={`tab ${activeTab === 'gamesPlayed' ? 'active' : ''}`}
-            onClick={() => setActiveTab('gamesPlayed')}
+            onClick={() => handleTabChange('gamesPlayed')}
           >
             🎮 Games Played
           </button>
           <button 
             className={`tab ${activeTab === 'averageGuesses' ? 'active' : ''}`}
-            onClick={() => setActiveTab('averageGuesses')}
+            onClick={() => handleTabChange('averageGuesses')}
           >
             🧮 Avg Guesses
           </button>
