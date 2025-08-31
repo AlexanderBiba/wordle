@@ -225,6 +225,8 @@ body {
   }
 }
 
+
+
 // Profile button
 .profile-btn {
   background: rgba(255, 255, 255, 0.1);
@@ -555,14 +557,14 @@ body {
   overflow: hidden;
   cursor: default;
   
-  // Letter flip animation
+  // Letter animation - Smooth and subtle bounce effect
   &.exact, &.misplaced {
-    animation: flip 0.6s ease-in-out;
+    animation: bounceElastic 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     
-    // Add staggered shimmer delay for wave effect
+    // Add staggered delay for wave effect
     @for $i from 1 through 5 {
-      &:nth-child(#{$i})::before {
-        animation-delay: #{$i * 0.1}s;
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 0.08}s;
       }
     }
   }
@@ -590,6 +592,7 @@ body {
     box-shadow: palette.$shadow-md, 0 0 20px rgba(palette.$success, 0.3);
     transform: scale(1.05);
     
+    // Enhanced shimmer effect for correct letters
     &::before {
       content: '';
       position: absolute;
@@ -601,14 +604,16 @@ body {
         90deg,
         transparent 0%,
         transparent 20%,
-        rgba(255, 255, 255, 0.08) 30%,
-        rgba(255, 255, 255, 0.15) 40%,
-        rgba(255, 255, 255, 0.08) 50%,
+        rgba(255, 255, 255, 0.15) 30%,
+        rgba(255, 255, 255, 0.25) 40%,
+        rgba(255, 255, 255, 0.15) 50%,
         transparent 60%,
         transparent 100%
       );
-      animation: shimmer 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      animation: shimmer 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
+    
+
   }
 
   &.misplaced {

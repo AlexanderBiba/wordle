@@ -1,7 +1,7 @@
 import "./App.scss";
 import Keyboard from "react-simple-keyboard";
 import "react-simple-keyboard/build/css/index.css";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { useGameState } from "./hooks/useGameState";
 import { useKeyboard } from "./hooks/useKeyboard";
@@ -11,7 +11,7 @@ import { useKeyboardTheme } from "./hooks/useKeyboardTheme";
 import { useWordRendering } from "./hooks/useWordRendering";
 import UserProfile from "./components/UserProfile";
 import Leaderboard from "./components/Leaderboard";
-import { WORD_LENGTH, NUM_ATTEMPTS, API_ENDPOINTS, KEYBOARD_LAYOUT, KEYBOARD_DISPLAY } from "./constants";
+import { KEYBOARD_LAYOUT, KEYBOARD_DISPLAY } from "./constants";
 import { calculateWinPercentage, getFallbackAvatar } from "./utils";
 
 
