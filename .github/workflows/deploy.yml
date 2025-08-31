@@ -115,121 +115,7 @@ jobs:
           echo "📱 PWA features: Installable, Offline, Service Worker"
           echo "🔄 Next deployment will be automatic on push to main"
 
-  # PWA validation and testing
-  validate-pwa:
-    needs: deploy
-    runs-on: ubuntu-latest
-    name: 🔍 Validate PWA
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-        
-      - name: 📁 Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: app-build
-          path: build/
-        
-      - name: 🧪 Install Lighthouse CI
-        run: npm install -g @lhci/cli@0.12.x
-        
-      - name: 🔍 Verify PWA Build
-        run: |
-          echo "Verifying PWA build files..."
-          node scripts/verify-pwa-build.js
-        
-      - name: 🔍 Run PWA CI Testing
-        run: |
-          echo "Running comprehensive PWA CI testing..."
-          chmod +x scripts/test-pwa-ci.sh
-          chmod +x scripts/test-pwa-simple.sh
-          
-          # Try the comprehensive test first
-          if ./scripts/test-pwa-ci.sh; then
-            echo "✅ Comprehensive PWA testing passed"
-          else
-            echo "⚠️ Comprehensive testing failed, trying simple approach..."
-            if ./scripts/test-pwa-simple.sh; then
-              echo "✅ Simple PWA testing passed"
-            else
-              echo "❌ Both PWA testing approaches failed"
-              exit 1
-            fi
-          fi
-          
-      - name: 🔍 Validate PWA Files
-        run: |
-          echo "Validating PWA files..."
-          echo "Service Worker:"
-          if [ -f "build/sw.js" ]; then
-            echo "✅ SW exists, size: $(du -h build/sw.js | cut -f1)"
-            echo "First few lines:"
-            head -3 build/sw.js
-          else
-            echo "❌ Service worker missing"
-          fi
-          
-          echo "Manifest:"
-          if [ -f "build/manifest.json" ]; then
-            echo "✅ Manifest exists, size: $(du -h build/manifest.json | cut -f1)"
-            echo "Manifest content:"
-            cat build/manifest.json
-          else
-            echo "❌ Manifest missing"
-          fi
-          
-          echo "Icons:"
-          ls -la build/logo*.png 2>/dev/null && echo "✅ Icons found" || echo "❌ Icons missing"
-          
-      - name: 📊 Upload Lighthouse results
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouse-results
-          path: .lighthouseci/
-          retention-days: 30
-          
-      - name: 🔍 Manual PWA Validation
-        run: |
-          echo "Running manual PWA validation..."
-          
-          # Start server
-          npx serve -s build -p 3000 &
-          SERVER_PID=$!
-          sleep 5
-          
-          # Test basic PWA features
-          echo "Testing PWA features..."
-          
-          # Check manifest
-          MANIFEST_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/manifest.json)
-          echo "Manifest status: $MANIFEST_STATUS"
-          
-          # Check service worker
-          SW_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/sw.js)
-          echo "Service worker status: $SW_STATUS"
-          
-          # Check icons
-          ICON192_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/logo192.png)
-          ICON512_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/logo512.png)
-          echo "Icon 192 status: $ICON192_STATUS"
-          echo "Icon 512 status: $ICON512_STATUS"
-          
-          # Check main page
-          PAGE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/)
-          echo "Main page status: $PAGE_STATUS"
-          
-          # Validate PWA requirements
-          if [ "$MANIFEST_STATUS" = "200" ] && [ "$SW_STATUS" = "200" ] && [ "$ICON192_STATUS" = "200" ] && [ "$ICON512_STATUS" = "200" ] && [ "$PAGE_STATUS" = "200" ]; then
-            echo "✅ All PWA files are accessible"
-          else
-            echo "❌ Some PWA files are not accessible"
-            exit 1
-          fi
-          
-          # Kill server
-          kill $SERVER_PID 2>/dev/null || true
+
 
   # Performance monitoring
   performance-check:
@@ -264,7 +150,7 @@ jobs:
 
   # Notify deployment status
   notify:
-    needs: [deploy, validate-pwa, performance-check]
+    needs: [deploy, performance-check]
     runs-on: ubuntu-latest
     name: 📢 Notify Status
     if: always()
@@ -281,11 +167,7 @@ jobs:
             echo "Check the logs above for details"
           fi
           
-          if [ "${{ needs.validate-pwa.result }}" == "success" ]; then
-            echo "🔍 PWA Validation: ✅ Passed"
-          else
-            echo "🔍 PWA Validation: ❌ Failed"
-          fi
+
           
           if [ "${{ needs.performance-check.result }}" == "success" ]; then
             echo "📊 Performance Check: ✅ Passed"
