@@ -537,6 +537,13 @@ body {
   // Letter flip animation
   &.exact, &.misplaced {
     animation: flip 0.6s ease-in-out;
+    
+    // Add staggered shimmer delay for wave effect
+    @for $i from 1 through 5 {
+      &:nth-child(#{$i})::before {
+        animation-delay: #{$i * 0.1}s;
+      }
+    }
   }
 
   &.empty {
@@ -569,8 +576,8 @@ body {
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
-      animation: shimmer 2s ease-in-out infinite;
+      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+      animation: shimmer 3s ease-in-out infinite;
     }
   }
 
@@ -588,8 +595,8 @@ body {
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
-      animation: shimmer 2s ease-in-out infinite;
+      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+      animation: shimmer 3s ease-in-out infinite;
     }
   }
 
