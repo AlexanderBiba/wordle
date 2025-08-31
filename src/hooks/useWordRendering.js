@@ -3,12 +3,12 @@ import { useMemo } from 'react';
 export const useWordRendering = (state) => {
   const renderedWords = useMemo(() => {
     return state.words.map((word, i) => {
-      const current = i === state.currWord;
+      const current = state.currWord !== null && i === state.currWord;
       const classes = [];
       if (current) classes.push("current");
-      if (i === state.currWord && state.invalidWord) classes.push("invalid");
+      if (state.currWord !== null && i === state.currWord && state.invalidWord) classes.push("invalid");
 
-      const letters = (current
+      const letters = (current && state.currLetter !== null
         ? word.map((letter, j) =>
             j === state.currLetter
               ? { ...letter, current: true }

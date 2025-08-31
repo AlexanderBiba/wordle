@@ -43,8 +43,8 @@ export const useGameState = (user) => {
   const serializeGameState = useCallback((gameState) => {
     // Deep clone and flatten the state
     const serialized = {
-      currWord: gameState.currWord || 0,
-      currLetter: gameState.currLetter || 0,
+      currWord: gameState.currWord,
+      currLetter: gameState.currLetter,
       gameWon: gameState.gameWon || false,
       gameLost: gameState.gameLost || false,
       invalidWord: gameState.invalidWord || false,
@@ -90,8 +90,8 @@ export const useGameState = (user) => {
     }
     
     return {
-      currWord: firebaseData.currWord || 0,
-      currLetter: firebaseData.currLetter || 0,
+      currWord: (firebaseData.gameWon || firebaseData.gameLost) ? null : (firebaseData.currWord || 0),
+      currLetter: (firebaseData.gameWon || firebaseData.gameLost) ? null : (firebaseData.currLetter || 0),
       gameWon: firebaseData.gameWon || false,
       gameLost: firebaseData.gameLost || false,
       invalidWord: firebaseData.invalidWord || false,
