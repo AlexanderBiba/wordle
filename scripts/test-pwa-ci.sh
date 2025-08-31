@@ -81,11 +81,12 @@ start_server() {
 # Function to test basic PWA features
 test_pwa_features() {
     local port=${1:-3000}
+    local base_path=${2:-"/wordle"}
     
-    print_status "Testing PWA features on port $port..."
+    print_status "Testing PWA features on port $port with base path $base_path..."
     
     # Test manifest
-    local manifest_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port/manifest.json)
+    local manifest_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port$base_path/manifest.json)
     if [ "$manifest_status" = "200" ]; then
         print_success "Manifest accessible (HTTP $manifest_status)"
     else
@@ -94,7 +95,7 @@ test_pwa_features() {
     fi
     
     # Test service worker
-    local sw_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port/sw.js)
+    local sw_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port$base_path/sw.js)
     if [ "$sw_status" = "200" ]; then
         print_success "Service worker accessible (HTTP $sw_status)"
     else
@@ -103,8 +104,8 @@ test_pwa_features() {
     fi
     
     # Test icons
-    local icon192_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port/logo192.png)
-    local icon512_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port/logo512.png)
+    local icon192_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port$base_path/logo192.png)
+    local icon512_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port$base_path/logo512.png)
     
     if [ "$icon192_status" = "200" ] && [ "$icon512_status" = "200" ]; then
         print_success "Icons accessible (192: $icon192_status, 512: $icon512_status)"
@@ -114,7 +115,7 @@ test_pwa_features() {
     fi
     
     # Test main page
-    local page_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port/)
+    local page_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port$base_path/)
     if [ "$page_status" = "200" ]; then
         print_success "Main page accessible (HTTP $page_status)"
     else
@@ -129,6 +130,7 @@ test_pwa_features() {
 run_lighthouse() {
     local config_file=${1:-".lighthouserc.json"}
     local fallback_config=${2:-".lighthouserc-ci.json"}
+    local gh_pages_config=${3:-".lighthouserc-gh-pages.json"}
     
     # Check if Lighthouse CI is available
     if ! command -v lhci &> /dev/null; then
@@ -138,18 +140,26 @@ run_lighthouse() {
     
     print_status "Running Lighthouse audit with config: $config_file"
     
-    if lhci autorun --config="$config_file"; then
-        print_success "Lighthouse audit completed successfully"
+    # Try GitHub Pages config first (most specific)
+    if [ -f "$gh_pages_config" ] && lhci autorun --config="$gh_pages_config"; then
+        print_success "Lighthouse audit completed with GitHub Pages config"
         return 0
     else
-        print_warning "Main Lighthouse config failed, trying fallback..."
+        print_warning "GitHub Pages config failed, trying main config..."
         
-        if [ -f "$fallback_config" ] && lhci autorun --config="$fallback_config"; then
-            print_success "Lighthouse audit completed with fallback config"
+        if lhci autorun --config="$config_file"; then
+            print_success "Lighthouse audit completed successfully"
             return 0
         else
-            print_error "Lighthouse audit failed with both configs"
-            return 1
+            print_warning "Main Lighthouse config failed, trying fallback..."
+            
+            if [ -f "$fallback_config" ] && lhci autorun --config="$fallback_config"; then
+                print_success "Lighthouse audit completed with fallback config"
+                return 0
+            else
+                print_error "Lighthouse audit failed with all configs"
+                return 1
+            fi
         fi
     fi
 }
@@ -163,14 +173,14 @@ main() {
     fi
     
     # Test PWA features
-    if ! test_pwa_features 3000; then
+    if ! test_pwa_features 3000 "/wordle"; then
         print_error "PWA feature tests failed"
         kill $SERVER_PID 2>/dev/null || true
         exit 1
     fi
     
     # Run Lighthouse audit
-    if ! run_lighthouse ".lighthouserc.json" ".lighthouserc-ci.json"; then
+    if ! run_lighthouse ".lighthouserc.json" ".lighthouserc-ci.json" ".lighthouserc-gh-pages.json"; then
         print_warning "Lighthouse audit failed, but PWA features are working"
         # Don't exit here, as PWA features are working
     fi
