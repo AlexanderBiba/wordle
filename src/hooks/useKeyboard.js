@@ -49,18 +49,24 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
           }
           
           // Process the guess result
+          const newFoundLetters = { ...foundLetters };
+          const newAbsentLetters = { ...absentLetters };
+          
           const tmpWords = words.map((word, i) => {
             if (i !== currWord) return word;
             return word.map((letter, j) => {
               switch (guessResponse[j]) {
                 case 2:
-                  foundLetters[letter.char] = true;
+                  newFoundLetters[letter.char] = true;
                   return { ...letter, exact: true };
                 case 1:
-                  foundLetters[letter.char] = true;
+                  newFoundLetters[letter.char] = true;
                   return { ...letter, misplaced: true };
                 default:
-                  absentLetters[letter.char] = true;
+                  // Only mark as absent if it's not already found
+                  if (!newFoundLetters[letter.char]) {
+                    newAbsentLetters[letter.char] = true;
+                  }
                   return letter;
               }
             });
@@ -80,9 +86,15 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
             currLetter: gameWon ? null : 0,
             gameWon: gameWon,
             gameLost: gameLost,
-            absentLetters,
-            foundLetters,
+            absentLetters: newAbsentLetters,
+            foundLetters: newFoundLetters,
           };
+          
+          console.log('Updating game state with:', {
+            foundLetters: Object.keys(newFoundLetters),
+            absentLetters: Object.keys(newAbsentLetters),
+            guessResponse: guessResponse
+          });
           
           updateGameState(newState);
           

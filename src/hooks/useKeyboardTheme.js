@@ -2,47 +2,38 @@ import { useMemo } from 'react';
 
 export const useKeyboardTheme = (state) => {
   const buttonTheme = useMemo(() => {
-    const themes = [];
+    const theme = {};
     
-    // Invalid word theme for backspace
-    if (state.invalidWord) {
-      themes.push({
-        class: "emphasis",
-        buttons: "{backspace}",
-      });
-    }
+    // Process all letters in the alphabet
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     
-    // Enter button emphasis when word is complete
-    if (!state.invalidWord && 
-        state.words[state.currWord]?.filter(({ char }) => char).length === 5) {
-      themes.push({
-        class: "emphasis",
-        buttons: "{enter}",
-      });
-    }
+    alphabet.forEach(letter => {
+      // Priority: found letters (green) take precedence over absent letters (red)
+      if (state.foundLetters[letter]) {
+        theme[letter] = 'correct';
+      }
+      // Check if letter is in absentLetters (red - not in word)
+      else if (state.absentLetters[letter]) {
+        theme[letter] = 'absent';
+      }
+      // Default gray for unused letters
+      else {
+        theme[letter] = 'default';
+      }
+    });
     
-    // Absent letters theme
-    if (Object.keys(state.absentLetters).length > 0) {
-      themes.push({
-        class: "absent-letter",
-        buttons: Object.keys(state.absentLetters)
-          .map((c) => c.toLowerCase())
-          .join(" "),
-      });
-    }
+    // Special keys
+    theme['Enter'] = 'default';
+    theme['⌫'] = state.invalidWord ? 'emphasis' : 'default';
     
-    // Found letters theme
-    if (Object.keys(state.foundLetters).length > 0) {
-      themes.push({
-        class: "found-letter",
-        buttons: Object.keys(state.foundLetters)
-          .map((c) => c.toLowerCase())
-          .join(" "),
-      });
-    }
+    console.log('Keyboard theme generated:', {
+      foundLetters: Object.keys(state.foundLetters),
+      absentLetters: Object.keys(state.absentLetters),
+      theme: theme
+    });
     
-    return themes;
-  }, [state.invalidWord, state.words, state.currWord, state.absentLetters, state.foundLetters]);
+    return theme;
+  }, [state.absentLetters, state.foundLetters, state.invalidWord]);
 
   return { buttonTheme };
 }; 

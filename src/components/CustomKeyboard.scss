@@ -66,9 +66,16 @@
     }
     
     &.absent {
-      background: palette.$gray-500;
+      background: palette.$error;
       color: palette.$white;
-      border-color: palette.$gray-500;
+      border-color: palette.$error;
+    }
+    
+    &.emphasis {
+      background: palette.$warning;
+      color: palette.$white;
+      border-color: palette.$warning;
+      animation: pulse 0.5s ease-in-out;
     }
     
     &.default {

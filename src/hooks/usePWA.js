@@ -31,7 +31,7 @@ export const usePWA = () => {
       // Check if app is installed via other means
       if (window.location.search.includes('source=pwa') || 
           document.referrer.includes('android-app://') ||
-          window.navigator.userAgent.includes('Mobile') && window.navigator.userAgent.includes('Safari')) {
+          (window.navigator.userAgent.includes('Mobile') && window.navigator.userAgent.includes('Safari'))) {
         setIsInstalled(true);
         setShowInstallBanner(false);
         return true;
