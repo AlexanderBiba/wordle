@@ -150,7 +150,8 @@ const Leaderboard = ({ isOpen, onClose }) => {
       case 'gamesPlayed':
         return user.stats.gamesPlayed;
       case 'averageGuesses':
-        return user.stats.averageGuesses.toFixed(1);
+        const avgGuesses = (user.stats.averageGuesses || 0).toFixed(1);
+        return avgGuesses;
       default:
         return user.stats[metric] || 0;
     }
@@ -254,8 +255,8 @@ const Leaderboard = ({ isOpen, onClose }) => {
                         break;
                       case 'averageGuesses':
                         // Lower is better for average guesses
-                        aValue = -a.stats.averageGuesses;
-                        bValue = -b.stats.averageGuesses;
+                        aValue = -(a.stats.averageGuesses || 0);
+                        bValue = -(b.stats.averageGuesses || 0);
                         break;
                       default:
                         aValue = a.stats[activeTab] || 0;

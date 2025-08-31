@@ -168,9 +168,17 @@ export const useGameState = (user) => {
     if (!user) return;
 
     try {
+      // Ensure averageGuesses is calculated and updated
+      const statsWithAvgGuesses = {
+        ...newStats,
+        averageGuesses: newStats.gamesPlayed > 0 
+          ? parseFloat(((newStats.totalGuesses / newStats.gamesPlayed)).toFixed(1))
+          : 0
+      };
+
       const statsDoc = getUserStatsDoc();
-      await setDoc(statsDoc, newStats);
-      setStats(newStats);
+      await setDoc(statsDoc, statsWithAvgGuesses);
+      setStats(statsWithAvgGuesses);
     } catch (error) {
       console.error('Error saving stats:', error);
     }

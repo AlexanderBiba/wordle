@@ -88,6 +88,14 @@ functions.http('router', (req, res) => {
             // Calculate win rate
             const winRate = Math.round((userData.stats.gamesWon / userData.stats.gamesPlayed) * 100);
             
+            // Handle migration for totalGuesses field
+            let totalGuesses = userData.stats.totalGuesses || 0;
+            if (totalGuesses === 0 && userData.stats.gamesPlayed > 0) {
+              // Estimate totalGuesses based on games played (assume average of 4 guesses per game)
+              totalGuesses = userData.stats.gamesPlayed * 4;
+              console.log(`Migrating totalGuesses for user ${userData.displayName}: estimated ${totalGuesses} based on ${userData.stats.gamesPlayed} games`);
+            }
+            
             // Format display name for privacy (first name + last initial)
             const formatDisplayName = (fullName) => {
               if (!fullName) return 'Anonymous';
@@ -108,7 +116,11 @@ functions.http('router', (req, res) => {
               photoURL: userData.photoURL || null,
               stats: {
                 ...userData.stats,
-                winRate: winRate
+                winRate: winRate,
+                totalGuesses: totalGuesses,
+                averageGuesses: userData.stats.gamesPlayed > 0 
+                  ? parseFloat(((totalGuesses / userData.stats.gamesPlayed)).toFixed(1))
+                  : 0
               }
             });
           }
@@ -130,7 +142,7 @@ functions.http('router', (req, res) => {
             sortedUsers = users.sort((a, b) => b.stats.gamesPlayed - a.stats.gamesPlayed);
             break;
           case 'averageGuesses':
-            sortedUsers = users.sort((a, b) => a.stats.averageGuesses - b.stats.averageGuesses);
+            sortedUsers = users.sort((a, b) => (a.stats.averageGuesses || 0) - (b.stats.averageGuesses || 0));
             break;
           default:
             sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);

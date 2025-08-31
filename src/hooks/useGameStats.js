@@ -33,6 +33,11 @@ export const useGameStats = (stats, updateStats, user, userStats, updateUserStat
         cloudStats.totalGuesses += 6; // NUM_ATTEMPTS
       }
 
+      // Calculate and update average guesses
+      cloudStats.averageGuesses = cloudStats.gamesPlayed > 0 
+        ? parseFloat(((cloudStats.totalGuesses / cloudStats.gamesPlayed)).toFixed(1))
+        : 0;
+
       // Check for new achievements
       const newAchievements = checkAchievements(cloudStats, { guesses: attempts });
       if (newAchievements.length > 0) {
