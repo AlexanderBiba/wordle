@@ -56,7 +56,7 @@ const PopupModal = ({
         </div>
 
         {tabs.length > 0 && (
-          <div className="popup-tabs-container">
+          <div className={`popup-tabs-container ${showLeftShadow || showRightShadow ? 'scrollable' : ''}`}>
             {showLeftShadow && <div className="scroll-shadow scroll-shadow-left" />}
             <div className="popup-tabs" ref={tabsRef}>
               {tabs.map((tab) => (
