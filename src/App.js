@@ -13,6 +13,7 @@ import UserProfile from "./components/UserProfile";
 import Leaderboard from "./components/Leaderboard";
 import Information from "./components/Information";
 import HeaderIcon from "./components/HeaderIcon";
+import Card from "./components/Card";
 
 import { calculateWinPercentage, getFallbackAvatar } from "./utils";
 
@@ -159,49 +160,51 @@ export default function App() {
         </div>
       )}
 
-      <div className="header-container">
-        <h1 className="header">
-          <span role="img" aria-label="puzzle">🧩</span> Wordle
-        </h1>
-        <div className="header-actions">
-          <HeaderIcon
-            icon="💡"
-            onClick={() => setShowInformation(true)}
-            ariaLabel="Open information"
-            title="How to Play & About"
-          />
-          <HeaderIcon
-            icon="🏆"
-            onClick={() => setShowLeaderboard(true)}
-            ariaLabel="Open leaderboard"
-            title="View Leaderboard"
-          />
-          {user && (
+      <Card variant="header" padding="compact" marginBottom="2rem" background="primary">
+        <div className="header-content">
+          <h1 className="header">
+            <span role="img" aria-label="puzzle">🧩</span> Wordle
+          </h1>
+          <div className="header-actions">
             <HeaderIcon
-              isImage={true}
-              imageSrc={user.photoURL || getFallbackAvatar(user.displayName)}
-              imageAlt={user.displayName}
-              onClick={() => setShowProfile(true)}
-              ariaLabel="Open user profile"
-              title="User Profile"
-              onImageError={(e) => {
-                e.target.src = getFallbackAvatar(user.displayName);
-              }}
+              icon="💡"
+              onClick={() => setShowInformation(true)}
+              ariaLabel="Open information"
+              title="How to Play & About"
             />
-          )}
-          <HeaderIcon
-            icon={darkMode ? '☀️' : '🌙'}
-            onClick={toggleDarkMode}
-            ariaLabel={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
-            title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
-            className={darkMode ? 'dark' : 'light'}
-          />
+            <HeaderIcon
+              icon="🏆"
+              onClick={() => setShowLeaderboard(true)}
+              ariaLabel="Open leaderboard"
+              title="View Leaderboard"
+            />
+            {user && (
+              <HeaderIcon
+                isImage={true}
+                imageSrc={user.photoURL || getFallbackAvatar(user.displayName)}
+                imageAlt={user.displayName}
+                onClick={() => setShowProfile(true)}
+                ariaLabel="Open user profile"
+                title="User Profile"
+                onImageError={(e) => {
+                  e.target.src = getFallbackAvatar(user.displayName);
+                }}
+              />
+            )}
+            <HeaderIcon
+              icon={darkMode ? '☀️' : '🌙'}
+              onClick={toggleDarkMode}
+              ariaLabel={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+              title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+              className={darkMode ? 'dark' : 'light'}
+            />
+          </div>
         </div>
-      </div>
+      </Card>
       
       {/* Login prompt - only show if user is not logged in and not dismissed */}
       {!user && !loginPromptDismissed && (
-        <div className="login-prompt">
+        <Card variant="login" padding="normal" marginBottom="2rem">
           <div className="login-content">
             <button 
               className="dismiss-login-btn"
@@ -217,11 +220,17 @@ export default function App() {
               <span role="img" aria-label="google">🔍</span> Sign in with Google
             </button>
           </div>
-        </div>
+        </Card>
       )}
       
-      <div className="status-wrapper">
-        <div className={`status-text ${statusClass}`}>
+      <Card 
+        variant={`status ${statusClass}`} 
+        padding="compact" 
+        marginBottom="2rem"
+        background={statusClass === "win" ? "success" : statusClass === "lose" ? "error" : statusClass === "invalid" ? "warning" : statusClass === "loading" ? "primary" : "surface"}
+        className="status-card"
+      >
+        <div className="status-content">
           <div className="status">{statusMessage}</div>
           {showSignInButton && (
             <button 
@@ -233,10 +242,10 @@ export default function App() {
             </button>
           )}
         </div>
-      </div>
+      </Card>
 
-      <div className="wordle-wrapper">
-        <div className="wordle">
+      <Card variant="game" padding="normal" marginBottom="2rem">
+        <div className="game-content">
           {renderedWords.map(({ key, classes, letters }) => (
             <div key={key} className={classes}>
               {letters.map(({ key: letterKey, char, classes: letterClasses }) => (
@@ -258,12 +267,12 @@ export default function App() {
             />
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Statistics Display */}
       {(state.gameWon || state.gameLost) && user && (
-        <div className="stats-wrapper">
-          <div className="stats">
+        <Card variant="stats" padding="normal" marginBottom="2rem">
+          <div className="stats-content">
             <h3>Statistics</h3>
             <div className="stats-grid">
               <div className="stat-item">
@@ -305,7 +314,7 @@ export default function App() {
               ))}
             </div>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* User Profile Modal */}

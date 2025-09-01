@@ -1,0 +1,289 @@
+@use "../palette";
+@use "../animation";
+
+.card {
+  width: 100%;
+  border-radius: palette.$border-radius-xl;
+  box-shadow: palette.$shadow-xl;
+  border: 1px solid palette.$border-light;
+  transition: all animation.$transition-normal;
+  position: relative;
+  overflow: hidden;
+  
+  // Default background (for cards without specific variants)
+  background: palette.$surface;
+  
+  // Dark mode base styles
+  .dark-mode & {
+    background: palette.$surface-dark;
+    border-color: palette.$border-dark;
+    box-shadow: palette.$shadow-xl-dark;
+  }
+  
+  // Variants - these override the base styles with higher specificity
+  &.card--header {
+    background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-dark 100%);
+    border-color: palette.$primary;
+    box-shadow: palette.$shadow-lg;
+    
+    // Override dark mode background for header - always use blue gradient
+    .dark-mode & {
+      background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-dark 100%);
+      border-color: palette.$primary;
+    }
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        transparent 20%,
+        rgba(255, 255, 255, 0.06) 30%,
+        rgba(255, 255, 255, 0.12) 40%,
+        rgba(255, 255, 255, 0.06) 50%,
+        transparent 60%,
+        transparent 100%
+      );
+      animation: shimmer 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+  }
+  
+  &.card--login {
+    background: palette.$surface;
+    border-color: palette.$border-light;
+    
+    .dark-mode & {
+      background: palette.$surface-dark;
+      border-color: palette.$border-dark;
+    }
+  }
+  
+  &.card--status {
+    background: palette.$surface;
+    border-color: palette.$border-light;
+    
+    &.card--status-win {
+      background: linear-gradient(135deg, palette.$success 0%, palette.$success-light 100%);
+      border-color: palette.$success;
+      box-shadow: palette.$shadow-lg, 0 0 20px rgba(palette.$success, 0.3);
+      animation: scaleIn 0.5s ease-out;
+    }
+    
+    &.card--status-lose {
+      background: linear-gradient(135deg, palette.$error 0%, palette.$error-light 100%);
+      border-color: palette.$error;
+    }
+    
+    &.card--status-invalid {
+      background: linear-gradient(135deg, palette.$warning 0%, palette.$warning-light 100%);
+      border-color: palette.$warning;
+      animation: shake 0.5s ease-in-out;
+    }
+    
+    &.card--status-loading {
+      background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-light 100%);
+      border-color: palette.$primary;
+    }
+    
+    .dark-mode & {
+      background: palette.$surface-dark;
+      border-color: palette.$border-dark;
+    }
+  }
+  
+  &.card--game {
+    background: palette.$surface;
+    border-color: palette.$border-light;
+    min-height: 500px;
+    
+    .dark-mode & {
+      background: palette.$surface-dark;
+      border-color: palette.$border-dark;
+    }
+  }
+  
+  &.card--stats {
+    background: palette.$surface;
+    border-color: palette.$border-light;
+    
+    .dark-mode & {
+      background: palette.$surface-dark;
+      border-color: palette.$border-dark;
+    }
+  }
+  
+  // Padding variants
+  &.card--padding-compact {
+    padding: 1rem 1.5rem;
+  }
+  
+  &.card--padding-normal {
+    padding: 2rem;
+  }
+  
+  &.card--padding-large {
+    padding: 2.5rem;
+  }
+  
+  // Shadow variants
+  &.card--shadow-sm {
+    box-shadow: palette.$shadow-sm;
+    
+    .dark-mode & {
+      box-shadow: palette.$shadow-sm-dark;
+    }
+  }
+  
+  &.card--shadow-md {
+    box-shadow: palette.$shadow-md;
+    
+    .dark-mode & {
+      box-shadow: palette.$shadow-md-dark;
+    }
+  }
+  
+  &.card--shadow-lg {
+    box-shadow: palette.$shadow-lg;
+    
+    .dark-mode & {
+      box-shadow: palette.$shadow-lg-dark;
+    }
+  }
+  
+  &.card--shadow-xl {
+    box-shadow: palette.$shadow-xl;
+    
+    .dark-mode & {
+      box-shadow: palette.$shadow-xl-dark;
+    }
+  }
+  
+  // Background variants
+  &.card--background-surface {
+    background: palette.$surface;
+    
+    .dark-mode & {
+      background: palette.$surface-dark;
+    }
+  }
+  
+  &.card--background-primary {
+    background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-dark 100%);
+  }
+  
+  &.card--background-success {
+    background: linear-gradient(135deg, palette.$success 0%, palette.$success-light 100%);
+  }
+  
+  &.card--background-warning {
+    background: linear-gradient(135deg, palette.$warning 0%, palette.$warning-light 100%);
+  }
+  
+  &.card--background-error {
+    background: linear-gradient(135deg, palette.$error 0%, palette.$error-light 100%);
+  }
+  
+  // Border variants
+  &.card--border {
+    border: 1px solid palette.$border-light;
+    
+    .dark-mode & {
+      border-color: palette.$border-dark;
+    }
+  }
+  
+  &.card--no-border {
+    border: none;
+  }
+  
+  // Hover effects removed - no more elevation on hover
+  
+  // Focus states
+  &:focus-within {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(palette.$primary, 0.3), palette.$shadow-xl;
+    
+    .dark-mode & {
+      box-shadow: 0 0 0 3px rgba(palette.$primary, 0.3), palette.$shadow-xl-dark;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .card {
+    &--padding-normal {
+      padding: 1.5rem;
+    }
+    
+    &--padding-large {
+      padding: 2rem;
+    }
+    
+    &--game {
+      min-height: 350px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    &--padding-normal {
+      padding: 1rem;
+    }
+    
+    &--padding-large {
+      padding: 1.5rem;
+    }
+    
+    &--game {
+      min-height: 300px;
+    }
+  }
+}
+
+// Animation keyframes
+@keyframes shimmer {
+  0% { 
+    transform: translateX(-120%) skewX(-15deg); 
+    opacity: 0;
+  }
+  20% { 
+    opacity: 1;
+  }
+  80% { 
+    opacity: 1;
+  }
+  100% { 
+    transform: translateX(120%) skewX(-15deg); 
+    opacity: 0;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}

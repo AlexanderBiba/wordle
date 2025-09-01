@@ -254,40 +254,14 @@ body {
   }
 }
 
-// Header container with theme toggle
-.header-container {
+// Header content wrapper
+.header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: 600px;
-  margin-bottom: 2rem;
-  background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-dark 100%);
-  border-radius: palette.$border-radius-lg;
-  box-shadow: palette.$shadow-lg;
-  padding: 1rem 1.5rem;
   position: relative;
-  overflow: hidden;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      transparent 20%,
-      rgba(255, 255, 255, 0.06) 30%,
-      rgba(255, 255, 255, 0.12) 40%,
-      rgba(255, 255, 255, 0.06) 50%,
-      transparent 60%,
-      transparent 100%
-    );
-    animation: shimmer 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  }
+  z-index: 1;
 }
 
 .header-actions {
@@ -311,8 +285,6 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  
-
 }
 
 // Common button styles (used by other components)
@@ -354,51 +326,17 @@ body {
 
 // Header icon styles are now handled by HeaderIcon component
 
-@keyframes shimmer {
-  0% { 
-    transform: translateX(-120%) skewX(-15deg); 
-    opacity: 0;
-  }
-  20% { 
-    opacity: 1;
-  }
-  80% { 
-    opacity: 1;
-  }
-  100% { 
-    transform: translateX(120%) skewX(-15deg); 
-    opacity: 0;
-  }
-}
 
-// Login prompt
-.login-prompt {
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 2rem;
-  animation: fadeIn 0.5s ease-out;
-}
 
+// Login content wrapper
 .login-content {
-  background: palette.$surface;
-  border-radius: palette.$border-radius-xl;
-  box-shadow: palette.$shadow-xl;
-  border: 1px solid palette.$border-light;
-  padding: 2rem;
   text-align: center;
-  transition: all animation.$transition-normal;
   position: relative;
-  
-  .dark-mode & {
-    background: palette.$surface-dark;
-    border-color: palette.$border-dark;
-    box-shadow: palette.$shadow-xl-dark;
-  }
   
   .dismiss-login-btn {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: -1rem;
+    right: -1rem;
     background: none;
     border: none;
     color: palette.$text-secondary-light;
@@ -484,68 +422,20 @@ body {
   }
 }
 
-// Status wrapper with modern styling
-.status-wrapper {
-  margin-bottom: 2rem;
-  width: 100%;
-  max-width: 600px;
-}
-
-.status-text {
-  padding: 1rem 1.5rem;
-  border-radius: palette.$border-radius;
-  font-weight: 500;
-  font-size: 1.1rem;
+// Status content wrapper
+.status-content {
   text-align: center;
-  transition: animation.$transition-normal;
-  box-shadow: palette.$shadow;
-  background: palette.$surface;
-  border: 1px solid palette.$border-light;
-
-  &.win {
-    background: linear-gradient(135deg, palette.$success 0%, palette.$success-light 100%);
-    color: palette.$white;
-    border-color: palette.$success;
-    box-shadow: palette.$shadow-lg, 0 0 20px rgba(palette.$success, 0.3);
-    animation: scaleIn 0.5s ease-out;
+  
+  .status {
+    color: palette.$text-primary-light;
+    background: transparent;
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 0;
+    border-radius: 0;
     
-    .status {
-      background: transparent;
-      color: palette.$white;
-    }
-  }
-
-  &.lose {
-    background: linear-gradient(135deg, palette.$error 0%, palette.$error-light 100%);
-    color: palette.$white;
-    border-color: palette.$error;
-    
-    .status {
-      background: transparent;
-      color: palette.$white;
-    }
-  }
-
-  &.invalid {
-    background: linear-gradient(135deg, palette.$warning 0%, palette.$warning-light 100%);
-    color: palette.$white;
-    border-color: palette.$warning;
-    animation: shake 0.5s ease-in-out;
-    
-    .status {
-      background: transparent;
-      color: palette.$white;
-    }
-  }
-
-  &.loading {
-    background: linear-gradient(135deg, palette.$primary 0%, palette.$primary-light 100%);
-    color: palette.$white;
-    border-color: palette.$primary;
-    
-    .status {
-      background: transparent;
-      color: palette.$white;
+    .dark-mode & {
+      color: palette.$text-primary-dark;
     }
   }
   
@@ -580,55 +470,23 @@ body {
   }
 }
 
-.status {
-  color: palette.$text-primary-light;
-  background: transparent;
-  font-size: 1.1rem;
-  font-weight: 500;
-  padding: 0;
-  border-radius: 0;
-}
-
-// Dark mode status styles
-.dark-mode .status-text {
-  background: palette.$surface-dark;
-  border-color: palette.$border-dark;
-  
-  .status {
-    color: palette.$text-primary-dark;
+// Status card variants - ensure white text on colored backgrounds
+.card.card--status {
+  &.card--background-success .status-content .status,
+  &.card--background-error .status-content .status,
+  &.card--background-warning .status-content .status,
+  &.card--background-primary .status-content .status {
+    color: palette.$white;
   }
 }
 
-// Wordle game board with modern card design
-.wordle-wrapper {
-  margin-bottom: 2rem;
-  width: 100%;
-  max-width: 600px;
-}
-
-.wordle {
+// Game content wrapper
+.game-content {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 2rem;
-  background: palette.$surface;
-  border-radius: palette.$border-radius-xl;
-  box-shadow: palette.$shadow-xl;
-  border: 1px solid palette.$border-light;
-  min-height: 500px;
   justify-content: flex-start;
-  transition: all animation.$transition-normal;
-}
-
-// Dark mode wordle styles
-.dark-mode .wordle {
-  background: palette.$surface-dark;
-  border-color: palette.$border-dark;
-  box-shadow: palette.$shadow-xl-dark;
-  
-  .keyboard-wrapper {
-    border-top-color: palette.$border-dark;
-  }
+  min-height: 500px;
 }
 
 .word {
@@ -794,28 +652,19 @@ body {
   }
 }
 
-// Statistics Display
-.stats-wrapper {
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 2rem;
-  animation: fadeIn 0.5s ease-out;
-}
-
-.stats {
-  background: palette.$surface;
-  border-radius: palette.$border-radius-xl;
-  box-shadow: palette.$shadow-xl;
-  border: 1px solid palette.$border-light;
-  padding: 2rem;
+// Stats content wrapper
+.stats-content {
   text-align: center;
-  transition: all animation.$transition-normal;
   
   h3 {
     margin: 0 0 1.5rem 0;
     color: palette.$text-primary-light;
     font-size: 1.5rem;
     font-weight: 700;
+    
+    .dark-mode & {
+      color: palette.$text-primary-dark;
+    }
   }
   
   h4 {
@@ -823,21 +672,10 @@ body {
     color: palette.$text-secondary-light;
     font-size: 1.1rem;
     font-weight: 600;
-  }
-}
-
-// Dark mode stats styles
-.dark-mode .stats {
-  background: palette.$surface-dark;
-  border-color: palette.$border-dark;
-  box-shadow: palette.$shadow-xl-dark;
-  
-  h3 {
-    color: palette.$text-primary-dark;
-  }
-  
-  h4 {
-    color: palette.$text-secondary-dark;
+    
+    .dark-mode & {
+      color: palette.$text-secondary-dark;
+    }
   }
 }
 
@@ -971,7 +809,7 @@ body {
   }
 }
 
-// Modern keyboard styling - now integrated into wordle card
+// Modern keyboard styling - now integrated into game card
 .keyboard-wrapper {
   width: 100%;
   margin-top: 1.5rem;
@@ -982,6 +820,10 @@ body {
   .simple-keyboard.hg-theme-default {
     max-width: 100%;
     margin: 0 auto;
+  }
+  
+  .dark-mode & {
+    border-top-color: palette.$border-dark;
   }
 }
 
@@ -1098,11 +940,6 @@ body {
     padding: 0.5rem;
   }
   
-  .header-container {
-    padding: 0.75rem 1rem;
-    margin-bottom: 1.5rem;
-  }
-  
   .header {
     font-size: 1.75rem;
   }
@@ -1113,8 +950,7 @@ body {
   
   // Header icon mobile styles are now handled by HeaderIcon component
   
-  .wordle {
-    padding: 1.5rem;
+  .game-content {
     gap: 0.5rem;
     min-height: 350px;
   }
@@ -1170,9 +1006,7 @@ body {
     }
   }
   
-  .stats {
-    padding: 1.5rem;
-    
+  .stats-content {
     h3 {
       font-size: 1.25rem;
     }
@@ -1197,10 +1031,6 @@ body {
   .word {
     gap: 0.4rem;
     height: 3rem;
-  }
-  
-  .header-container {
-    padding: 0.5rem 0.75rem;
   }
   
   .header {
@@ -1238,9 +1068,7 @@ body {
   
   // Header icon small screen styles are now handled by HeaderIcon component
   
-  .stats {
-    padding: 1rem;
-    
+  .stats-content {
     h3 {
       font-size: 1.125rem;
     }
