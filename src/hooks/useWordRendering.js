@@ -25,7 +25,10 @@ export const useWordRendering = (state) => {
         return {
           key: j,
           char: char ?? "",
-          classes: letterClasses
+          classes: letterClasses,
+          style: {
+            '--ripple-delay': `${(i * 5 + j) * 0.05}s`
+          }
         };
       });
 

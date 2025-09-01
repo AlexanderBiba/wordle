@@ -27,13 +27,16 @@ const CustomKeyboard = ({ onKeyPress, buttonTheme = {} }) => {
     <div className="custom-keyboard">
       {keys.map((row, rowIndex) => (
         <div key={rowIndex} className="keyboard-row">
-          {row.map((key) => (
+          {row.map((key, keyIndex) => (
             <button
               key={key}
               className={getKeyClass(key)}
               onClick={() => handleKeyClick(key)}
               type="button"
               aria-label={key === '⌫' ? 'Backspace' : key === 'Submit' ? 'Submit' : key}
+              style={{
+                '--ripple-delay': `${(rowIndex * 10 + keyIndex) * 0.03}s`
+              }}
             >
               {key}
             </button>
