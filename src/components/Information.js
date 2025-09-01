@@ -10,7 +10,7 @@ const Information = ({ isOpen, onClose }) => {
     <div className="information-overlay" onClick={onClose}>
       <div className="information" onClick={e => e.stopPropagation()}>
         <div className="information-header">
-          <h2>ℹ️ Information</h2>
+          <h2>💡 Information</h2>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
 

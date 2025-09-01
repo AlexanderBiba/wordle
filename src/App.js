@@ -169,7 +169,7 @@ export default function App() {
             aria-label="Open information"
             title="How to Play & About"
           >
-            <span className="information-icon">ℹ️</span>
+            <span className="information-icon">💡</span>
           </button>
           <button 
             className="leaderboard-btn"
