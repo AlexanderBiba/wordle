@@ -33,7 +33,7 @@
 
 .popup-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   padding: 2rem 2rem 1.5rem;
   border-bottom: 1px solid palette.$gray-200;
@@ -64,10 +64,15 @@
   font-size: 2rem;
   color: palette.$gray-500;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 0.25rem;
   border-radius: palette.$border-radius;
   transition: all animation.$transition-fast;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
   
   &:hover {
     background: palette.$gray-100;
