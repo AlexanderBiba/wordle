@@ -826,6 +826,15 @@ body {
       background: palette.$gray-500;
     }
   }
+  
+  // Add subtle letter coloring for better visibility in dark mode
+  &.exact {
+    color: palette.$success-light; // Light green text for better visibility
+  }
+  
+  &.misplaced {
+    color: palette.$warning-light; // Light yellow text for better visibility
+  }
 }
 
 // Statistics Display
