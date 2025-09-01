@@ -1,6 +1,6 @@
 import "./App.scss";
 import CustomKeyboard from "./components/CustomKeyboard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { useGameState } from "./hooks/useGameState";
 import { useKeyboard } from "./hooks/useKeyboard";
@@ -66,30 +66,39 @@ export default function App() {
 
   const isAppLoading = authLoading || gameLoading || minLoadingTime;
 
+  // Check if there are any guesses in the current game
+  const hasAnyGuesses = useMemo(() => {
+    return state.words.some(word => 
+      word.some(letter => letter.char && letter.char.trim() !== '')
+    );
+  }, [state.words]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setMinLoadingTime(false);
-      // Trigger ripple effect after app loads
+      // Trigger ripple effect after app loads, but only if there are no guesses
       setTimeout(() => {
-        setShowRippleEffect(true);
-        
-        // Trigger keyboard ripple effect after letters are done
-        // Letters take ~1.5s (30 letters * 0.05s delay + 0.6s animation)
-        setTimeout(() => {
-          setShowKeyboardRippleEffect(true);
+        if (!hasAnyGuesses) {
+          setShowRippleEffect(true);
           
-          // Reset both effects after keyboard animation completes
-          // Keyboard takes ~1.2s (30 keys * 0.03s delay + 0.6s animation)
+          // Trigger keyboard ripple effect after letters are done
+          // Letters take ~1.5s (30 letters * 0.05s delay + 0.6s animation)
           setTimeout(() => {
-            setShowRippleEffect(false);
-            setShowKeyboardRippleEffect(false);
-          }, 1500); // Keyboard animation time + buffer
-        }, 1500); // Letters animation time
+            setShowKeyboardRippleEffect(true);
+            
+            // Reset both effects after keyboard animation completes
+            // Keyboard takes ~1.2s (30 keys * 0.03s delay + 0.6s animation)
+            setTimeout(() => {
+              setShowRippleEffect(false);
+              setShowKeyboardRippleEffect(false);
+            }, 1500); // Keyboard animation time + buffer
+          }, 1500); // Letters animation time
+        }
       }, 100);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [hasAnyGuesses]);
 
   useEffect(() => {
     registerServiceWorker();

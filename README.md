@@ -43,7 +43,7 @@ A modern, feature-rich Wordle game built with React, Firebase, and PWA capabilit
 ### 🎨 Modern UI/UX
 - **Dark/Light Mode**: Toggle between themes
 - **Smooth Animations**: Polished interactions and transitions
-- **Sequential Ripple Wave Effect**: Beautiful wave animation that flows from letters to keyboard on app load
+- **Sequential Ripple Wave Effect**: Beautiful wave animation that flows from letters to keyboard on fresh game load (only when no guesses have been made)
 - **Responsive Design**: Optimized for mobile, tablet, and desktop
 - **Accessibility**: ARIA labels and keyboard navigation
 - **Modern Design**: Clean, intuitive interface
