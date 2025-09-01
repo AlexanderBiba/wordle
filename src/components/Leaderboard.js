@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { API_ENDPOINTS } from '../constants';
+import PopupModal from './PopupModal';
 import './Leaderboard.scss';
 
 const Leaderboard = ({ isOpen, onClose }) => {
@@ -185,175 +186,163 @@ const Leaderboard = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="leaderboard-overlay" onClick={onClose}>
-      <div className="leaderboard" onClick={e => e.stopPropagation()}>
-        <div className="leaderboard-header">
-          <div className="header-left">
-            <h2>🏆 Leaderboard</h2>
-            {userRank && (
-              <div className="user-rank">
-                <span className="rank-label">Your Rank:</span>
-                <span className="rank-number">#{userRank}</span>
-              </div>
-            )}
+  const tabs = [
+    { id: 'winRate', label: 'Win Rate', icon: '🎯' },
+    { id: 'totalWins', label: 'Total Wins', icon: '🏆' },
+    { id: 'maxStreak', label: 'Best Streak', icon: '🔥' },
+    { id: 'currentStreak', label: 'Current Streak', icon: '⚡' },
+    { id: 'gamesPlayed', label: 'Games Played', icon: '🎮' },
+    { id: 'averageGuesses', label: 'Avg Guesses', icon: '🧮' }
+  ];
+
+  const renderLeaderboardContent = () => {
+    if (loading) {
+      return (
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Loading leaderboard...</p>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="error-state">
+          <p>{error}</p>
+          <button onClick={fetchLeaderboard} className="retry-btn">
+            Try Again
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="leaderboard-list">
+        {leaderboardData.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📊</div>
+            <h3>No Data Yet</h3>
+            <p>Be the first to play and appear on the leaderboard!</p>
           </div>
-          <button className="close-btn" onClick={onClose}>×</button>
-        </div>
-
-        <div className="leaderboard-tabs">
-          <button 
-            className={`tab ${activeTab === 'winRate' ? 'active' : ''}`}
-            onClick={() => handleTabChange('winRate')}
-          >
-            🎯 Win Rate
-          </button>
-          <button 
-            className={`tab ${activeTab === 'totalWins' ? 'active' : ''}`}
-            onClick={() => handleTabChange('totalWins')}
-          >
-            🏆 Total Wins
-          </button>
-          <button 
-            className={`tab ${activeTab === 'maxStreak' ? 'active' : ''}`}
-            onClick={() => handleTabChange('maxStreak')}
-          >
-            🔥 Best Streak
-          </button>
-          <button 
-            className={`tab ${activeTab === 'currentStreak' ? 'active' : ''}`}
-            onClick={() => handleTabChange('currentStreak')}
-          >
-            ⚡ Current Streak
-          </button>
-          <button 
-            className={`tab ${activeTab === 'gamesPlayed' ? 'active' : ''}`}
-            onClick={() => handleTabChange('gamesPlayed')}
-          >
-            🎮 Games Played
-          </button>
-          <button 
-            className={`tab ${activeTab === 'averageGuesses' ? 'active' : ''}`}
-            onClick={() => handleTabChange('averageGuesses')}
-          >
-            🧮 Avg Guesses
-          </button>
-        </div>
-
-        <div className="leaderboard-content">
-          {loading ? (
-            <div className="loading-state">
-              <div className="loading-spinner"></div>
-              <p>Loading leaderboard...</p>
-            </div>
-          ) : error ? (
-            <div className="error-state">
-              <p>{error}</p>
-              <button onClick={fetchLeaderboard} className="retry-btn">
-                Try Again
-              </button>
-            </div>
-          ) : (
-            <div className="leaderboard-list">
-              {leaderboardData.length === 0 ? (
-                <div className="empty-state">
-                  <div className="empty-icon">📊</div>
-                  <h3>No Data Yet</h3>
-                  <p>Be the first to play and appear on the leaderboard!</p>
+        ) : (
+          leaderboardData
+            .sort((a, b) => {
+              // Sort based on the active metric
+              let aValue, bValue;
+              
+              switch (activeTab) {
+                case 'winRate':
+                  aValue = a.stats.winRate;
+                  bValue = b.stats.winRate;
+                  break;
+                case 'totalWins':
+                  aValue = a.stats.gamesWon;
+                  bValue = b.stats.gamesWon;
+                  break;
+                case 'maxStreak':
+                case 'currentStreak':
+                case 'gamesPlayed':
+                  aValue = a.stats[activeTab];
+                  bValue = b.stats[activeTab];
+                  break;
+                case 'averageGuesses':
+                  // Use weighted average guesses for ranking (lower is better)
+                  aValue = -(a.stats.weightedAvgGuesses || 0);
+                  bValue = -(b.stats.weightedAvgGuesses || 0);
+                  break;
+                default:
+                  aValue = a.stats[activeTab] || 0;
+                  bValue = b.stats[activeTab] || 0;
+              }
+              
+              return bValue - aValue;
+            })
+            .map((user, index) => (
+              <div key={user.uid} className="leaderboard-item">
+                <div className="rank-section">
+                  <span className="rank-icon">{getRankIcon(index + 1)}</span>
                 </div>
-              ) : (
-                leaderboardData
-                  .sort((a, b) => {
-                    // Sort based on the active metric
-                    let aValue, bValue;
-                    
-                    switch (activeTab) {
-                      case 'winRate':
-                        aValue = a.stats.winRate;
-                        bValue = b.stats.winRate;
-                        break;
-                      case 'totalWins':
-                        aValue = a.stats.gamesWon;
-                        bValue = b.stats.gamesWon;
-                        break;
-                      case 'maxStreak':
-                      case 'currentStreak':
-                      case 'gamesPlayed':
-                        aValue = a.stats[activeTab];
-                        bValue = b.stats[activeTab];
-                        break;
-                      case 'averageGuesses':
-                        // Use weighted average guesses for ranking (lower is better)
-                        aValue = -(a.stats.weightedAvgGuesses || 0);
-                        bValue = -(b.stats.weightedAvgGuesses || 0);
-                        break;
-                      default:
-                        aValue = a.stats[activeTab] || 0;
-                        bValue = b.stats[activeTab] || 0;
-                    }
-                    
-                    return bValue - aValue;
-                  })
-                  .map((user, index) => (
-                    <div key={user.uid} className="leaderboard-item">
-                      <div className="rank-section">
-                        <span className="rank-icon">{getRankIcon(index + 1)}</span>
-                      </div>
-                      
-                      <div className="user-section">
-                        <img 
-                          src={user.photoURL} 
-                          alt={user.displayName}
-                          className="user-avatar"
-                          onError={(e) => {
-                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&background=2563eb&color=fff&size=120`;
-                          }}
-                        />
-                        <div className="user-info">
-                          <h3 className="user-name">{user.displayName}</h3>
-                          <div className="user-stats">
-                            <span className="stat">
-                              {user.stats.gamesPlayed} games
-                            </span>
-                            <span className="stat">
-                              {user.stats.winRate}% win rate
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="metric-section">
-                        <div className="metric-value">
-                          {getMetricValue(user, activeTab)}
-                        </div>
-                        <div className="metric-label">
-                          {getMetricLabel(activeTab)}
-                        </div>
-                      </div>
+                
+                <div className="user-section">
+                  <img 
+                    src={user.photoURL} 
+                    alt={user.displayName}
+                    className="user-avatar"
+                    onError={(e) => {
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&background=2563eb&color=fff&size=120`;
+                    }}
+                  />
+                  <div className="user-info">
+                    <h3 className="user-name">{user.displayName}</h3>
+                    <div className="user-stats">
+                      <span className="stat">
+                        {user.stats.gamesPlayed} games
+                      </span>
+                      <span className="stat">
+                        {user.stats.winRate}% win rate
+                      </span>
                     </div>
-                  ))
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="leaderboard-footer">
-          <p className="leaderboard-note">
-            Rankings are updated in real-time. Sign in to compete and track your progress!
-            {activeTab === 'winRate' && (
-              <span className="metric-note">
-                {' '}Win rate is weighted by games played for fairer ranking.
-              </span>
-            )}
-            {activeTab === 'averageGuesses' && (
-              <span className="metric-note">
-                {' '}Average guesses is weighted to favor players with more games.
-              </span>
-            )}
-          </p>
-        </div>
+                  </div>
+                </div>
+                
+                <div className="metric-section">
+                  <div className="metric-value">
+                    {getMetricValue(user, activeTab)}
+                  </div>
+                  <div className="metric-label">
+                    {getMetricLabel(activeTab)}
+                  </div>
+                </div>
+              </div>
+            ))
+        )}
       </div>
+    );
+  };
+
+  const footer = (
+    <div className="leaderboard-footer">
+      <p className="leaderboard-note">
+        Rankings are updated in real-time. Sign in to compete and track your progress!
+        {activeTab === 'winRate' && (
+          <span className="metric-note">
+            {' '}Win rate is weighted by games played for fairer ranking.
+          </span>
+        )}
+        {activeTab === 'averageGuesses' && (
+          <span className="metric-note">
+            {' '}Average guesses is weighted to favor players with more games.
+          </span>
+        )}
+      </p>
     </div>
+  );
+
+  const title = (
+    <div className="leaderboard-title">
+      <span>🏆 Leaderboard</span>
+      {userRank && (
+        <div className="user-rank">
+          <span className="rank-label">Your Rank:</span>
+          <span className="rank-number">#{userRank}</span>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <PopupModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      tabs={tabs}
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      footer={footer}
+      maxWidth="900px"
+    >
+      {renderLeaderboardContent()}
+    </PopupModal>
   );
 };
 

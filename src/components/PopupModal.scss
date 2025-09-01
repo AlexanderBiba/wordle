@@ -1,0 +1,287 @@
+@use "../palette";
+@use "../animation";
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.popup-modal {
+  background: palette.$surface;
+  border-radius: palette.$border-radius-xl;
+  box-shadow: palette.$shadow-xl;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: scaleIn 0.3s ease-out;
+  
+  .dark-mode & {
+    background: palette.$surface-dark;
+    box-shadow: palette.$shadow-xl-dark;
+  }
+}
+
+.popup-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 2rem 2rem 1.5rem;
+  border-bottom: 1px solid palette.$gray-200;
+  
+  .dark-mode & {
+    border-bottom-color: palette.$border-dark;
+  }
+}
+
+.popup-title {
+  flex: 1;
+  
+  h2 {
+    margin: 0;
+    color: palette.$text-primary-light;
+    font-size: 1.5rem;
+    font-weight: 700;
+    
+    .dark-mode & {
+      color: palette.$text-primary-dark;
+    }
+  }
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: palette.$gray-500;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: palette.$border-radius;
+  transition: all animation.$transition-fast;
+  flex-shrink: 0;
+  
+  &:hover {
+    background: palette.$gray-100;
+    color: palette.$gray-700;
+    
+    .dark-mode & {
+      background: palette.$gray-800;
+      color: palette.$gray-300;
+    }
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px palette.$primary-light;
+  }
+}
+
+.popup-tabs-container {
+  position: relative;
+  border-bottom: 1px solid palette.$gray-200;
+  
+  .dark-mode & {
+    border-bottom-color: palette.$border-dark;
+  }
+}
+
+.scroll-shadow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity animation.$transition-fast;
+  
+  &.scroll-shadow-left {
+    left: 0;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 100%);
+    
+    .dark-mode & {
+      background: linear-gradient(to right, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 100%);
+    }
+  }
+  
+  &.scroll-shadow-right {
+    right: 0;
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 100%);
+    
+    .dark-mode & {
+      background: linear-gradient(to left, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 100%);
+    }
+  }
+}
+
+.popup-tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: palette.$gray-300 transparent;
+  
+  .dark-mode & {
+    scrollbar-color: palette.$gray-600 transparent;
+  }
+  
+  // Webkit scrollbar styling
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: palette.$gray-300;
+    border-radius: 2px;
+    
+    .dark-mode & {
+      background: palette.$gray-600;
+    }
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: palette.$gray-400;
+    
+    .dark-mode & {
+      background: palette.$gray-500;
+    }
+  }
+  
+  .tab {
+    flex-shrink: 0;
+    padding: 1rem 1.5rem;
+    background: none;
+    border: none;
+    color: palette.$text-secondary-light;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all animation.$transition-fast;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    outline: none;
+    
+    .dark-mode & {
+      color: palette.$text-secondary-dark;
+    }
+    
+    &:hover {
+      background: palette.$gray-50;
+      color: palette.$text-primary-light;
+      
+      .dark-mode & {
+        background: palette.$gray-800;
+        color: palette.$text-primary-dark;
+      }
+    }
+    
+    &.active {
+      color: palette.$primary;
+      border-bottom-color: palette.$primary;
+      background: palette.$gray-50;
+      
+      .dark-mode & {
+        background: palette.$gray-800;
+      }
+    }
+    
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+.popup-content {
+  padding: 2rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.popup-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid palette.$gray-200;
+  
+  .dark-mode & {
+    border-top-color: palette.$border-dark;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .popup-modal {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .popup-header {
+    padding: 1.5rem 1.5rem 1rem;
+    
+    .popup-title h2 {
+      font-size: 1.25rem;
+    }
+  }
+  
+  .popup-tabs {
+    .tab {
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+    }
+  }
+  
+  .popup-content {
+    padding: 1.5rem;
+  }
+  
+  .popup-footer {
+    padding: 1rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .popup-header {
+    padding: 1rem 1rem 0.75rem;
+    
+    .popup-title h2 {
+      font-size: 1.125rem;
+    }
+  }
+  
+  .popup-tabs-container {
+    .popup-tabs {
+      flex-direction: column;
+      overflow-x: visible;
+      
+      .tab {
+        border-bottom: none;
+        border-right: 3px solid transparent;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        white-space: normal;
+        
+        &.active {
+          border-right-color: palette.$primary;
+          border-bottom-color: transparent;
+        }
+      }
+    }
+  }
+  
+  .scroll-shadow {
+    display: none;
+  }
+  
+  .popup-content {
+    padding: 1rem;
+  }
+} 
