@@ -309,6 +309,11 @@
   }
 }
 
+// Ensure popup footer is left-aligned by default (desktop)
+.popup-footer {
+  text-align: left;
+}
+
 // Responsive design
 @media (max-width: 768px) {
   .user-info {
@@ -327,6 +332,11 @@
     .achievement-icon {
       font-size: 1.5rem;
     }
+  }
+  
+  // Center sign out button on mobile
+  .popup-footer {
+    text-align: center;
   }
 }
 
