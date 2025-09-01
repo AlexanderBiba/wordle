@@ -11,12 +11,14 @@ import { useWordRendering } from "./hooks/useWordRendering";
 import { usePWA } from "./hooks/usePWA";
 import UserProfile from "./components/UserProfile";
 import Leaderboard from "./components/Leaderboard";
+import Information from "./components/Information";
 
 import { calculateWinPercentage, getFallbackAvatar } from "./utils";
 
 export default function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showInformation, setShowInformation] = useState(false);
   const [minLoadingTime, setMinLoadingTime] = useState(true);
   const [loginPromptDismissed, setLoginPromptDismissed] = useState(false);
   
@@ -161,6 +163,14 @@ export default function App() {
           <span role="img" aria-label="puzzle">🧩</span> Wordle
         </h1>
         <div className="header-actions">
+          <button 
+            className="information-btn"
+            onClick={() => setShowInformation(true)}
+            aria-label="Open information"
+            title="How to Play & About"
+          >
+            <span className="information-icon">ℹ️</span>
+          </button>
           <button 
             className="leaderboard-btn"
             onClick={() => setShowLeaderboard(true)}
@@ -319,6 +329,12 @@ export default function App() {
       <Leaderboard 
         isOpen={showLeaderboard} 
         onClose={() => setShowLeaderboard(false)} 
+      />
+
+      {/* Information Modal */}
+      <Information 
+        isOpen={showInformation} 
+        onClose={() => setShowInformation(false)} 
       />
     </div>
   );

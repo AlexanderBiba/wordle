@@ -352,6 +352,20 @@ body {
   }
 }
 
+// Information button
+.information-btn {
+  @extend %button-base;
+  
+  .information-icon {
+    font-size: 1.25rem;
+    color: palette.$white;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 // Leaderboard button
 .leaderboard-btn {
   @extend %button-base;
