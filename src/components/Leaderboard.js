@@ -75,7 +75,9 @@ const Leaderboard = ({ isOpen, onClose }) => {
           currentStreak: 23,
           maxStreak: 45,
           winRate: 94.7,
-          averageGuesses: 3.8
+          weightedWinRate: 94.7,
+          averageGuesses: 3.8,
+          weightedAvgGuesses: 3.8
         }
       },
       {
@@ -88,7 +90,9 @@ const Leaderboard = ({ isOpen, onClose }) => {
           currentStreak: 15,
           maxStreak: 28,
           winRate: 92.1,
-          averageGuesses: 4.1
+          weightedWinRate: 92.1,
+          averageGuesses: 4.1,
+          weightedAvgGuesses: 4.1
         }
       },
       {
@@ -101,7 +105,9 @@ const Leaderboard = ({ isOpen, onClose }) => {
           currentStreak: 8,
           maxStreak: 19,
           winRate: 86.6,
-          averageGuesses: 4.3
+          weightedWinRate: 86.6,
+          averageGuesses: 4.3,
+          weightedAvgGuesses: 4.3
         }
       },
       {
@@ -114,7 +120,9 @@ const Leaderboard = ({ isOpen, onClose }) => {
           currentStreak: 5,
           maxStreak: 12,
           winRate: 84.4,
-          averageGuesses: 4.5
+          weightedWinRate: 84.4,
+          averageGuesses: 4.5,
+          weightedAvgGuesses: 4.5
         }
       },
       {
@@ -127,7 +135,9 @@ const Leaderboard = ({ isOpen, onClose }) => {
           currentStreak: 3,
           maxStreak: 7,
           winRate: 78.3,
-          averageGuesses: 4.8
+          weightedWinRate: 78.3,
+          averageGuesses: 4.8,
+          weightedAvgGuesses: 4.8
         }
       }
     ];
@@ -136,6 +146,7 @@ const Leaderboard = ({ isOpen, onClose }) => {
   const getMetricLabel = (metric) => {
     const labels = {
       winRate: 'Win Rate',
+      totalWins: 'Total Wins',
       maxStreak: 'Best Streak',
       currentStreak: 'Current Streak',
       gamesPlayed: 'Games Played',
@@ -148,6 +159,8 @@ const Leaderboard = ({ isOpen, onClose }) => {
     switch (metric) {
       case 'winRate':
         return `${user.stats.winRate}%`;
+      case 'totalWins':
+        return user.stats.gamesWon;
       case 'maxStreak':
         return user.stats.maxStreak;
       case 'currentStreak':
@@ -155,6 +168,7 @@ const Leaderboard = ({ isOpen, onClose }) => {
       case 'gamesPlayed':
         return user.stats.gamesPlayed;
       case 'averageGuesses':
+        // Show raw average guesses, but use weighted for ranking
         const avgGuesses = (user.stats.averageGuesses || 0).toFixed(1);
         return avgGuesses;
       default:
@@ -193,6 +207,12 @@ const Leaderboard = ({ isOpen, onClose }) => {
             onClick={() => handleTabChange('winRate')}
           >
             🎯 Win Rate
+          </button>
+          <button 
+            className={`tab ${activeTab === 'totalWins' ? 'active' : ''}`}
+            onClick={() => handleTabChange('totalWins')}
+          >
+            🏆 Total Wins
           </button>
           <button 
             className={`tab ${activeTab === 'maxStreak' ? 'active' : ''}`}
@@ -252,6 +272,10 @@ const Leaderboard = ({ isOpen, onClose }) => {
                         aValue = a.stats.winRate;
                         bValue = b.stats.winRate;
                         break;
+                      case 'totalWins':
+                        aValue = a.stats.gamesWon;
+                        bValue = b.stats.gamesWon;
+                        break;
                       case 'maxStreak':
                       case 'currentStreak':
                       case 'gamesPlayed':
@@ -259,9 +283,9 @@ const Leaderboard = ({ isOpen, onClose }) => {
                         bValue = b.stats[activeTab];
                         break;
                       case 'averageGuesses':
-                        // Lower is better for average guesses
-                        aValue = -(a.stats.averageGuesses || 0);
-                        bValue = -(b.stats.averageGuesses || 0);
+                        // Use weighted average guesses for ranking (lower is better)
+                        aValue = -(a.stats.weightedAvgGuesses || 0);
+                        bValue = -(b.stats.weightedAvgGuesses || 0);
                         break;
                       default:
                         aValue = a.stats[activeTab] || 0;
@@ -316,6 +340,16 @@ const Leaderboard = ({ isOpen, onClose }) => {
         <div className="leaderboard-footer">
           <p className="leaderboard-note">
             Rankings are updated in real-time. Sign in to compete and track your progress!
+            {activeTab === 'winRate' && (
+              <span className="metric-note">
+                {' '}Win rate is weighted by games played for fairer ranking.
+              </span>
+            )}
+            {activeTab === 'averageGuesses' && (
+              <span className="metric-note">
+                {' '}Average guesses is weighted to favor players with more games.
+              </span>
+            )}
           </p>
         </div>
       </div>

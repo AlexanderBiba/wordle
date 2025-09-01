@@ -122,6 +122,11 @@ async function handleGetLeaderboard(req, res) {
         // Calculate win rate
         const winRate = Math.round((userData.stats.gamesWon / userData.stats.gamesPlayed) * 100);
         
+        // Calculate weighted win rate (win rate * games played factor)
+        // This gives more weight to players with more games while still considering win rate
+        const gamesPlayed = userData.stats.gamesPlayed;
+        const weightedWinRate = winRate * Math.min(gamesPlayed / 10, 1); // Cap at 10 games for fairness
+        
         // Handle migration for totalGuesses field
         let totalGuesses = userData.stats.totalGuesses || 0;
         if (totalGuesses === 0 && userData.stats.gamesPlayed > 0) {
@@ -129,6 +134,13 @@ async function handleGetLeaderboard(req, res) {
           totalGuesses = userData.stats.gamesPlayed * 4;
           console.log(`Migrating totalGuesses for user ${userData.displayName}: estimated ${totalGuesses} based on ${userData.stats.gamesPlayed} games`);
         }
+        
+        // Calculate weighted average guesses (penalize players with fewer games)
+        // Lower average guesses is better, so we add a penalty for fewer games
+        const avgGuesses = userData.stats.gamesPlayed > 0 
+          ? parseFloat(((totalGuesses / userData.stats.gamesPlayed)).toFixed(1))
+          : 0;
+        const weightedAvgGuesses = avgGuesses + (Math.max(0, 5 - gamesPlayed) * 0.5); // Add penalty for <5 games
         
         // Format display name for privacy (first name + last initial)
         const formatDisplayName = (fullName) => {
@@ -151,10 +163,10 @@ async function handleGetLeaderboard(req, res) {
           stats: {
             ...userData.stats,
             winRate: winRate,
+            weightedWinRate: weightedWinRate,
+            weightedAvgGuesses: weightedAvgGuesses,
             totalGuesses: totalGuesses,
-            averageGuesses: userData.stats.gamesPlayed > 0 
-              ? parseFloat(((totalGuesses / userData.stats.gamesPlayed)).toFixed(1))
-              : 0
+            averageGuesses: avgGuesses
           }
         });
       }
@@ -164,7 +176,8 @@ async function handleGetLeaderboard(req, res) {
     let sortedUsers = [];
     switch (metric) {
       case 'winRate':
-        sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
+        // Use weighted win rate for fairer ranking
+        sortedUsers = users.sort((a, b) => b.stats.weightedWinRate - a.stats.weightedWinRate);
         break;
       case 'maxStreak':
         sortedUsers = users.sort((a, b) => b.stats.maxStreak - a.stats.maxStreak);
@@ -176,10 +189,15 @@ async function handleGetLeaderboard(req, res) {
         sortedUsers = users.sort((a, b) => b.stats.gamesPlayed - a.stats.gamesPlayed);
         break;
       case 'averageGuesses':
-        sortedUsers = users.sort((a, b) => (a.stats.averageGuesses || 0) - (b.stats.averageGuesses || 0));
+        // Use weighted average guesses for fairer ranking (lower is better)
+        sortedUsers = users.sort((a, b) => (a.stats.weightedAvgGuesses || 0) - (b.stats.weightedAvgGuesses || 0));
+        break;
+      case 'totalWins':
+        sortedUsers = users.sort((a, b) => b.stats.gamesWon - a.stats.gamesWon);
         break;
       default:
-        sortedUsers = users.sort((a, b) => b.stats.winRate - a.stats.winRate);
+        // Use weighted win rate for fairer ranking
+        sortedUsers = users.sort((a, b) => b.stats.weightedWinRate - a.stats.weightedWinRate);
     }
     
     // Return top users based on limit

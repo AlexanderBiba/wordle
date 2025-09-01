@@ -445,6 +445,15 @@
     .dark-mode & {
       color: palette.$text-secondary-dark;
     }
+    
+    .metric-note {
+      color: palette.$primary;
+      font-weight: 500;
+      
+      .dark-mode & {
+        color: palette.$primary-light;
+      }
+    }
   }
 }
 
