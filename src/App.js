@@ -12,6 +12,7 @@ import { usePWA } from "./hooks/usePWA";
 import UserProfile from "./components/UserProfile";
 import Leaderboard from "./components/Leaderboard";
 import Information from "./components/Information";
+import HeaderIcon from "./components/HeaderIcon";
 
 import { calculateWinPercentage, getFallbackAvatar } from "./utils";
 
@@ -163,50 +164,38 @@ export default function App() {
           <span role="img" aria-label="puzzle">🧩</span> Wordle
         </h1>
         <div className="header-actions">
-          <button 
-            className="information-btn"
+          <HeaderIcon
+            icon="💡"
             onClick={() => setShowInformation(true)}
-            aria-label="Open information"
+            ariaLabel="Open information"
             title="How to Play & About"
-          >
-            <span className="information-icon">💡</span>
-          </button>
-          <button 
-            className="leaderboard-btn"
+          />
+          <HeaderIcon
+            icon="🏆"
             onClick={() => setShowLeaderboard(true)}
-            aria-label="Open leaderboard"
+            ariaLabel="Open leaderboard"
             title="View Leaderboard"
-          >
-            <span className="leaderboard-icon">🏆</span>
-          </button>
+          />
           {user && (
-            <button 
-              className="profile-btn"
+            <HeaderIcon
+              isImage={true}
+              imageSrc={user.photoURL || getFallbackAvatar(user.displayName)}
+              imageAlt={user.displayName}
               onClick={() => setShowProfile(true)}
-              aria-label="Open user profile"
+              ariaLabel="Open user profile"
               title="User Profile"
-            >
-              <img 
-                src={user.photoURL || getFallbackAvatar(user.displayName)}
-                alt={user.displayName}
-                className="profile-avatar"
-                onError={(e) => {
-                  e.target.src = getFallbackAvatar(user.displayName);
-                }}
-              />
-            </button>
+              onImageError={(e) => {
+                e.target.src = getFallbackAvatar(user.displayName);
+              }}
+            />
           )}
-          <button 
-            className={`theme-toggle ${darkMode ? 'dark' : 'light'}`}
+          <HeaderIcon
+            icon={darkMode ? '☀️' : '🌙'}
             onClick={toggleDarkMode}
-            aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+            ariaLabel={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
             title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
-          >
-            <span className="toggle-icon">
-              {darkMode ? '☀️' : '🌙'}
-            </span>
-          </button>
-
+            className={darkMode ? 'dark' : 'light'}
+          />
         </div>
       </div>
       

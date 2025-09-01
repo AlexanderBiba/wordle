@@ -259,26 +259,29 @@
   
   .popup-tabs-container {
     .popup-tabs {
-      flex-direction: column;
-      overflow-x: visible;
+      // Keep horizontal layout with scrolling on mobile
+      flex-direction: row;
+      overflow-x: auto;
       
       .tab {
-        border-bottom: none;
-        border-right: 3px solid transparent;
+        // Keep bottom border for active state
+        border-bottom: 3px solid transparent;
+        border-right: none;
         padding: 0.5rem 0.75rem;
         font-size: 0.75rem;
-        white-space: normal;
+        white-space: nowrap; // Prevent text wrapping to maintain horizontal layout
         
         &.active {
-          border-right-color: palette.$primary;
-          border-bottom-color: transparent;
+          border-bottom-color: palette.$primary;
+          border-right-color: transparent;
         }
       }
     }
   }
   
+  // Keep scroll shadows visible on mobile
   .scroll-shadow {
-    display: none;
+    display: block;
   }
   
   .popup-content {

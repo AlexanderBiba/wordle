@@ -1,0 +1,70 @@
+@use "../palette";
+@use "../animation";
+
+.header-icon {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  transition: all animation.$transition-normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  min-width: 3rem;
+  min-height: 3rem;
+  max-width: 3rem;
+  max-height: 3rem;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  }
+}
+
+.header-icon-emoji {
+  font-size: 1.25rem;
+  color: palette.$white;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-icon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+// Responsive design for mobile
+@media (max-width: 768px) {
+  .header-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    max-width: 2.75rem;
+    max-height: 2.75rem;
+  }
+  
+  .header-icon-emoji {
+    font-size: 1rem;
+  }
+}

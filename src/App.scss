@@ -315,7 +315,7 @@ body {
 
 }
 
-// Common button styles
+// Common button styles (used by other components)
 %button-base {
   background: rgba(255, 255, 255, 0.1);
   border: 2px solid rgba(255, 255, 255, 0.2);
@@ -352,64 +352,7 @@ body {
   }
 }
 
-// Information button
-.information-btn {
-  @extend %button-base;
-  
-  .information-icon {
-    font-size: 1.25rem;
-    color: palette.$white;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-// Leaderboard button
-.leaderboard-btn {
-  @extend %button-base;
-  
-  .leaderboard-icon {
-    font-size: 1.25rem;
-    color: palette.$white;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-// Profile button
-.profile-btn {
-  @extend %button-base;
-  
-  .profile-avatar {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-  }
-}
-
-// Theme toggle button
-.theme-toggle {
-  @extend %button-base;
-  
-  .toggle-icon {
-    font-size: 1.25rem;
-    transition: transform animation.$transition-normal;
-    color: palette.$white;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  &:hover .toggle-icon {
-    transform: scale(1.1);
-  }
-}
+// Header icon styles are now handled by HeaderIcon component
 
 @keyframes shimmer {
   0% { 
@@ -1168,40 +1111,7 @@ body {
     gap: 0.75rem;
   }
   
-  .profile-btn {
-    width: 2.75rem;
-    height: 2.75rem;
-    min-width: 2.75rem;
-    min-height: 2.75rem;
-    max-width: 2.75rem;
-    max-height: 2.75rem;
-  }
-  
-  .leaderboard-btn {
-    width: 2.75rem;
-    height: 2.75rem;
-    min-width: 2.75rem;
-    min-height: 2.75rem;
-    max-width: 2.75rem;
-    max-height: 2.75rem;
-    
-    .leaderboard-icon {
-      font-size: 1rem;
-    }
-  }
-  
-  .theme-toggle {
-    width: 2.75rem;
-    height: 2.75rem;
-    min-width: 2.75rem;
-    min-height: 2.75rem;
-    max-width: 2.75rem;
-    max-height: 2.75rem;
-    
-    .toggle-icon {
-      font-size: 1rem;
-    }
-  }
+  // Header icon mobile styles are now handled by HeaderIcon component
   
   .wordle {
     padding: 1.5rem;
@@ -1326,20 +1236,7 @@ body {
     gap: 0.5rem;
   }
   
-  .profile-btn {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-  
-  .theme-toggle {
-    min-width: 2.5rem;
-    height: 2.5rem;
-    padding: 0.4rem;
-    
-    .toggle-icon {
-      font-size: 0.875rem;
-    }
-  }
+  // Header icon small screen styles are now handled by HeaderIcon component
   
   .stats {
     padding: 1rem;
