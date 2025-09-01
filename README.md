@@ -113,7 +113,3 @@ MIT License
 ## Author
 
 **Alexander Biba**
-
----
-
-*Note: This application requires an internet connection and does not work offline.*
