@@ -26,6 +26,12 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
       case "Enter":
         if (currLetter < WORD_LENGTH) return;
         
+        // Set loading state
+        updateGameState(prevState => ({
+          ...prevState,
+          checkingWord: true,
+        }));
+        
         try {
           const guessRequest = new URL("router", API_ENDPOINTS.WORD_VALIDATION);
           guessRequest.searchParams.append(
@@ -55,13 +61,18 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
           const guessResponse = await response.json();
           
           if (guessResponse.error === "INVALID_WORD") {
-            updateGameState({
-              ...state,
+            updateGameState(prevState => ({
+              ...prevState,
               invalidWord: true,
-            });
+              checkingWord: false,
+            }));
             return;
           } else if (guessResponse.error) {
             console.error('Word validation error:', guessResponse.error);
+            updateGameState(prevState => ({
+              ...prevState,
+              checkingWord: false,
+            }));
             return;
           }
           
@@ -97,12 +108,12 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
           }
           
           const newState = {
-            ...state,
             words: tmpWords,
             currWord: gameWon ? null : currWord + 1,
             currLetter: gameWon ? null : 0,
             gameWon: gameWon,
             gameLost: gameLost,
+            checkingWord: false,
             absentLetters: newAbsentLetters,
             foundLetters: newFoundLetters,
           };
@@ -116,10 +127,11 @@ export const useKeyboard = (state, gameLoading, updateGameState, saveGameStateTo
         } catch (error) {
           console.error('Error processing guess:', error);
           // Set invalid word state on error
-          updateGameState({
-            ...state,
+          updateGameState(prevState => ({
+            ...prevState,
             invalidWord: true,
-          });
+            checkingWord: false,
+          }));
         }
         break;
         

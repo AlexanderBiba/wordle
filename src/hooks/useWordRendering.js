@@ -7,6 +7,7 @@ export const useWordRendering = (state) => {
       const classes = [];
       if (current) classes.push("current");
       if (state.currWord !== null && i === state.currWord && state.invalidWord) classes.push("invalid");
+      if (state.currWord !== null && i === state.currWord && state.checkingWord) classes.push("checking");
 
       const letters = (current && state.currLetter !== null
         ? word.map((letter, j) =>
@@ -38,7 +39,7 @@ export const useWordRendering = (state) => {
         letters
       };
     });
-  }, [state.words, state.currWord, state.currLetter, state.invalidWord]);
+  }, [state.words, state.currWord, state.currLetter, state.invalidWord, state.checkingWord]);
 
   return { renderedWords };
 }; 

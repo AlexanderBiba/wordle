@@ -197,3 +197,66 @@ $transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
     transform: translateX(100%);
   }
 }
+
+// Loading ripple effect for word checking
+@keyframes loadingRipple {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(palette.$primary, 0.4);
+    opacity: 1;
+  }
+  25% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 4px rgba(palette.$primary, 0.3);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(palette.$primary, 0.2);
+    opacity: 0.8;
+  }
+  75% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 4px rgba(palette.$primary, 0.1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(palette.$primary, 0);
+    opacity: 1;
+  }
+}
+
+// Staggered loading ripple for word row
+@keyframes loadingRippleStaggered {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(palette.$primary, 0.4);
+    opacity: 1;
+    filter: brightness(1);
+  }
+  25% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 4px rgba(palette.$primary, 0.3);
+    opacity: 0.9;
+    filter: brightness(1.1);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(palette.$primary, 0.2);
+    opacity: 0.8;
+    filter: brightness(1.2);
+  }
+  75% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 4px rgba(palette.$primary, 0.1);
+    opacity: 0.9;
+    filter: brightness(1.1);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(palette.$primary, 0);
+    opacity: 1;
+    filter: brightness(1);
+  }
+}

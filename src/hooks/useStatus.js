@@ -3,7 +3,8 @@ import { NUM_ATTEMPTS, WORD_LENGTH } from '../constants';
 
 export const useStatus = (state, gameLoading, user, loginPromptDismissed) => {
   const statusMessage = useMemo(() => {
-    if (gameLoading) return "Checking word...";
+    if (gameLoading) return "Loading game...";
+    if (state.checkingWord) return "Checking word...";
     
     // Different messages based on authentication status
     if (state.gameWon) {
@@ -39,6 +40,7 @@ export const useStatus = (state, gameLoading, user, loginPromptDismissed) => {
 
   const statusClass = useMemo(() => {
     if (gameLoading) return "loading";
+    if (state.checkingWord) return "loading";
     if (state.gameWon) return "win";
     if (state.gameLost) return "lose";
     if (state.invalidWord) return "invalid";

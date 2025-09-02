@@ -42,6 +42,7 @@ export const useGameState = (user) => {
       gameWon: gameState.gameWon || false,
       gameLost: gameState.gameLost || false,
       invalidWord: gameState.invalidWord || false,
+      checkingWord: gameState.checkingWord || false,
       lastPlayedDate: gameState.lastPlayedDate || today,
       // Convert words array to a flat structure
       wordsData: gameState.words.map((word, wordIndex) => 
@@ -89,6 +90,7 @@ export const useGameState = (user) => {
       gameWon: firebaseData.gameWon || false,
       gameLost: firebaseData.gameLost || false,
       invalidWord: firebaseData.invalidWord || false,
+      checkingWord: firebaseData.checkingWord || false,
       lastPlayedDate: firebaseData.lastPlayedDate || today,
       words: words,
       absentLetters: (firebaseData.absentLetters || []).reduce((acc, letter) => {

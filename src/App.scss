@@ -517,6 +517,15 @@ body {
   &.invalid {
     animation: shake 0.5s ease-in-out;
   }
+
+  &.checking {
+    .letter {
+      animation: loadingRippleStaggered 1.5s ease-in-out infinite;
+      animation-delay: var(--ripple-delay, 0s);
+      border-color: palette.$primary;
+      box-shadow: 0 0 0 2px rgba(palette.$primary, 0.3);
+    }
+  }
 }
 
 .letter {
