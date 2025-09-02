@@ -51,7 +51,25 @@ const UserProfile = ({ isOpen, onClose }) => {
   ];
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString();
+    if (!date) return 'Unknown Date';
+    
+    try {
+      // Handle Firestore Timestamp objects
+      if (date && typeof date.toDate === 'function') {
+        return date.toDate().toLocaleDateString();
+      }
+      
+      // Handle regular Date objects or date strings
+      const dateObj = new Date(date);
+      if (isNaN(dateObj.getTime())) {
+        return 'Unknown Date';
+      }
+      
+      return dateObj.toLocaleDateString();
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Unknown Date';
+    }
   };
 
   const getCategoryIcon = (category) => {
