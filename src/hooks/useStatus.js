@@ -1,7 +1,31 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { NUM_ATTEMPTS, WORD_LENGTH } from '../constants';
+import { getTimeUntilNextWord } from '../utils';
 
 export const useStatus = (state, gameLoading, user, loginPromptDismissed) => {
+  const [nextWordTime, setNextWordTime] = useState(null);
+
+  // Update next word time every second when game is over for logged-in users
+  useEffect(() => {
+    if (!user || (!state.gameWon && !state.gameLost)) {
+      setNextWordTime(null);
+      return;
+    }
+
+    const updateTime = () => {
+      const timeData = getTimeUntilNextWord();
+      setNextWordTime(timeData);
+    };
+
+    // Update immediately
+    updateTime();
+
+    // Update every second
+    const interval = setInterval(updateTime, 1000);
+
+    return () => clearInterval(interval);
+  }, [user, state.gameWon, state.gameLost]);
+
   const statusMessage = useMemo(() => {
     if (gameLoading) return "Loading game...";
     if (state.checkingWord) return "Checking word...";
@@ -9,7 +33,8 @@ export const useStatus = (state, gameLoading, user, loginPromptDismissed) => {
     // Different messages based on authentication status
     if (state.gameWon) {
       if (user) {
-        return "🎉 Amazing! You got it! Come back tomorrow for a new challenge!";
+        const timeStr = nextWordTime ? `\nNext word in ${nextWordTime.timeString}` : '';
+        return `🎉 Amazing! You got it! Come back tomorrow for a new challenge!${timeStr}`;
       } else {
         return "🎉 Great job! Sign in to play daily challenges and track your progress!";
       }
@@ -17,7 +42,8 @@ export const useStatus = (state, gameLoading, user, loginPromptDismissed) => {
     
     if (state.gameLost) {
       if (user) {
-        return "😔 Game over! The word was tough today. Try again tomorrow!";
+        const timeStr = nextWordTime ? `\nNext word in ${nextWordTime.timeString}` : '';
+        return `😔 Game over! The word was tough today. Try again tomorrow!${timeStr}`;
       } else {
         return "😔 Game over! Sign in to play daily challenges and track your progress!";
       }
@@ -36,7 +62,7 @@ export const useStatus = (state, gameLoading, user, loginPromptDismissed) => {
     } else {
       return `Welcome to Wordle! Guess the ${WORD_LENGTH}-letter word in ${NUM_ATTEMPTS} attempts. (Demo mode - sign in for daily challenges!)`;
     }
-  }, [state, gameLoading, user]);
+  }, [state, gameLoading, user, nextWordTime]);
 
   const statusClass = useMemo(() => {
     if (gameLoading) return "loading";

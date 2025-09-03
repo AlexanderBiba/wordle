@@ -433,6 +433,7 @@ body {
     font-weight: 500;
     padding: 0;
     border-radius: 0;
+    white-space: pre-line;
     
     .dark-mode & {
       color: palette.$text-primary-dark;
