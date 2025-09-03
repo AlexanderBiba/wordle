@@ -1,6 +1,6 @@
 import "./App.scss";
 import CustomKeyboard from "./components/CustomKeyboard";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { useGameState } from "./hooks/useGameState";
 import { useKeyboard } from "./hooks/useKeyboard";
@@ -23,8 +23,6 @@ export default function App() {
   const [showInformation, setShowInformation] = useState(false);
   const [minLoadingTime, setMinLoadingTime] = useState(true);
   const [loginPromptDismissed, setLoginPromptDismissed] = useState(false);
-  const [showRippleEffect, setShowRippleEffect] = useState(false);
-  const [showKeyboardRippleEffect, setShowKeyboardRippleEffect] = useState(false);
   
   const { user, userStats, signInWithGoogle, updateUserStats, loading: authLoading } = useAuth();
   
@@ -66,39 +64,15 @@ export default function App() {
 
   const isAppLoading = authLoading || gameLoading || minLoadingTime;
 
-  // Check if there are any guesses in the current game
-  const hasAnyGuesses = useMemo(() => {
-    return state.words.some(word => 
-      word.some(letter => letter.char && letter.char.trim() !== '')
-    );
-  }, [state.words]);
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setMinLoadingTime(false);
-      // Trigger ripple effect after app loads, but only if there are no guesses
-      setTimeout(() => {
-        if (!hasAnyGuesses) {
-          setShowRippleEffect(true);
-          
-          // Trigger keyboard ripple effect after letters are done
-          // Letters take ~1.5s (30 letters * 0.05s delay + 0.6s animation)
-          setTimeout(() => {
-            setShowKeyboardRippleEffect(true);
-            
-            // Reset both effects after keyboard animation completes
-            // Keyboard takes ~1.2s (30 keys * 0.03s delay + 0.6s animation)
-            setTimeout(() => {
-              setShowRippleEffect(false);
-              setShowKeyboardRippleEffect(false);
-            }, 1500); // Keyboard animation time + buffer
-          }, 1500); // Letters animation time
-        }
-      }, 100);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [hasAnyGuesses]);
+  }, []);
 
   useEffect(() => {
     registerServiceWorker();
@@ -273,7 +247,7 @@ export default function App() {
       </Card>
 
       <Card variant="game" padding="normal" marginBottom="2rem">
-        <div className={`game-content ${showRippleEffect ? 'ripple-wave-active' : ''}`}>
+        <div className="game-content">
           {renderedWords.map(({ key, classes, letters }) => (
             <div key={key} className={classes}>
               {letters.map(({ key: letterKey, char, classes: letterClasses, style }) => (
@@ -289,7 +263,7 @@ export default function App() {
           ))}
           
           {/* Custom Keyboard integrated within the wordle card */}
-          <div className={`keyboard-wrapper ${showKeyboardRippleEffect ? 'ripple-wave-active' : ''}`}>
+          <div className="keyboard-wrapper">
             <CustomKeyboard
               onKeyPress={(key) => onKeyDown({ key })}
               buttonTheme={buttonTheme}
