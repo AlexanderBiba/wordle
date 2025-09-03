@@ -101,6 +101,11 @@
     border-color: palette.$border-light;
     min-height: 500px;
     
+    // Override padding for game card to give keyboard more space
+    &.card--padding-normal {
+      padding: 1.5rem 1rem; // top/bottom left/right
+    }
+    
     .dark-mode & {
       background: palette.$surface-dark;
       border-color: palette.$border-dark;
@@ -227,6 +232,10 @@
     
     &--game {
       min-height: 350px;
+      
+      &.card--padding-normal {
+        padding: 1rem 0.75rem; // top/bottom left/right
+      }
     }
   }
 }
@@ -243,6 +252,10 @@
     
     &--game {
       min-height: 300px;
+      
+      &.card--padding-normal {
+        padding: 0.75rem 0.5rem; // top/bottom left/right
+      }
     }
   }
 }
